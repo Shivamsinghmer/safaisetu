@@ -51,9 +51,10 @@ resolved = mint + night · closed = emerald ring · reopened = pink + snow · re
 - 4px spacing base (Tailwind default). Page max width 1200px; landing sections are one viewport tall each.
 
 ## Motion
-- **Page transitions:** `ColorWipePageTransition` (great-ui) via `src/components/route-transitions.tsx`. It plays an
-  8-column wipe in the theme's muted color with rainbow-conic stroke stops, on path changes only (query/tab changes
-  stay instant). Add `data-no-transition` to a link to opt out.
+- **Page transitions:** "Blur". The old page blurs (12px), fades and scales to 1.02 while the new page sharpens in
+  from 0.98 (500ms, ease-in-out). It's built on React's `<ViewTransition default="page-blur">` in the root layout, so it
+  runs on every App Router navigation through the browser View Transitions API. Keyframes `blur-out` / `blur-in` live
+  in `globals.css`. Browsers without the API simply navigate without animating.
 - **Theme switch:** `BlurFadeThemeTransition` (great-ui) via `src/components/theme-toggle.tsx`. It blur-fades with
   the View Transitions API. The saved theme (`localStorage: safaisetu-theme`, else system) is applied before first
   paint by `InlineScript` in the root layout.

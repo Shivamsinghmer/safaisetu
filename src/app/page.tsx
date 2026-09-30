@@ -18,6 +18,9 @@ import { ButtonLink } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
 import { Hero } from "@/components/landing/hero";
+import { HeroFluid } from "@/components/landing/hero-fluid";
+import { LandingNav } from "@/components/landing/landing-nav";
+import { SiteFooter } from "@/components/landing/site-footer";
 import Bucket from "@/components/bucket";
 import BentoCard from "@/components/bento-card";
 import { getViewer } from "@/lib/session";
@@ -35,17 +38,7 @@ export default async function Landing() {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-4 sm:px-6">
           <Logo />
-          <nav className="hidden items-center gap-1 md:flex">
-            {[
-              ["How it works", "#flow"],
-              ["For municipalities", "#resolve"],
-              ["Who it's for", "#audiences"],
-            ].map(([l, h]) => (
-              <a key={h} href={h} className="rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
-                {l}
-              </a>
-            ))}
-          </nav>
+          <LandingNav />
           <div className="flex items-center gap-2">
             <ThemeToggle />
             {viewer ? (
@@ -68,6 +61,7 @@ export default async function Landing() {
 
       {/* 1 · Hero */}
       <section className={cn(SCREEN, "relative isolate overflow-hidden py-10")}>
+        <HeroFluid />
         <Hero ctaHref={cta} />
       </section>
 
@@ -188,13 +182,10 @@ export default async function Landing() {
               Get started <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
-
-          <footer className="mt-8 flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between short:mt-5">
-            <Logo />
-            <span>Built for cleaner cities · Hackathon 2026</span>
-          </footer>
         </div>
       </section>
+
+      <SiteFooter />
     </div>
   );
 }

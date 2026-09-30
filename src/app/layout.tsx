@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
+import { ViewTransition } from "react";
 import "./globals.css";
-import { RouteTransitions } from "@/components/route-transitions";
 import { InlineScript } from "@/components/inline-script";
 
 const bricolage = Bricolage_Grotesque({
@@ -45,7 +45,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <InlineScript html={THEME_SCRIPT} />
       </head>
       <body className="min-h-full">
-        <RouteTransitions>{children}</RouteTransitions>
+        {/* Route navigations are React transitions: the old page blurs out, the new one sharpens in (globals.css) */}
+        <ViewTransition default="page-blur">
+          <div className="min-h-full">{children}</div>
+        </ViewTransition>
       </body>
     </html>
   );

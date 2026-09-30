@@ -19,6 +19,7 @@
   },
   "iconLibrary": "lucide",
   "registries": {
-    "@uselayouts": "https://uselayouts.com/r/{name}.json"
+    "@uselayouts": "https://uselayouts.com/r/{name}.json",
+    "@23rd": "https://23rd.dev/r/{name}.json"
   }
 }

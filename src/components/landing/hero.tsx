@@ -14,12 +14,6 @@ const METRICS = [
 export function Hero({ ctaHref }: { ctaHref: string }) {
   return (
     <div className="relative mx-auto flex w-full max-w-[1240px] flex-col items-center px-4 text-center sm:px-6">
-      {/* dot grid, fading out toward the edges */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-24 -bottom-10 -z-10 bg-[radial-gradient(var(--border)_1.2px,transparent_1.2px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_75%)]"
-      />
-
       <span className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-[13px] font-medium text-muted-foreground shadow-xs">
         <Sparkles className="h-3.5 w-3.5 text-primary dark:text-chart-1" />
         AI-tagged reports · live tracking · proof of cleanup
