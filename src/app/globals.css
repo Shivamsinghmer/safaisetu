@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Short laptop screens: landing sections tighten to stay one screen tall */
+@custom-variant short (@media (min-width: 1024px) and (max-height: 760px));
+
 /* SafaiSetu design tokens — see DESIGN.md */
 @theme {
   --color-ink: #202020;
@@ -75,6 +78,11 @@
 
 html {
   color-scheme: light;
+  scroll-padding-top: 4rem;
+}
+
+html:has(.landing-snap) {
+  scroll-snap-type: y proximity;
 }
 
 body {

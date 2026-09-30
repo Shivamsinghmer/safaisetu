@@ -22,7 +22,7 @@ export default async function Landing() {
   const cta = viewer ? "/app" : "/signup";
 
   return (
-    <div className="bg-white">
+    <div className="landing-snap bg-white">
       {/* Nav */}
       <header className="sticky top-0 z-40 border-b border-transparent bg-white/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
@@ -58,17 +58,17 @@ export default async function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto grid max-w-[1200px] items-center gap-12 px-4 pt-12 pb-20 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:pt-20">
+      <section className="mx-auto grid min-h-[calc(100svh-4rem)] snap-start max-w-[1200px] content-center items-center gap-10 px-4 py-10 short:py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-12">
         <div className="animate-rise">
-          <Pill className="bg-violet/10 text-violet">
+          <Pill className="bg-violet/10 text-violet short:hidden">
             <Sparkles className="h-3 w-3" /> AI-tagged reports · live tracking
           </Pill>
-          <h1 className="mt-5 font-display text-[44px] leading-[1.02] font-extrabold tracking-[-0.045em] text-onyx sm:text-[64px] lg:text-display">
+          <h1 className="mt-5 short:mt-0 font-display text-[44px] leading-[1.02] font-extrabold tracking-[-0.045em] text-onyx sm:text-[60px] xl:text-[72px] short:!text-[52px]">
             Every bin, <br />
             every street, <br />
             <span className="text-gradient-primary">tracked to clean.</span>
           </h1>
-          <ul className="mt-7 space-y-2.5 text-[16px]">
+          <ul className="mt-6 space-y-2 text-[16px] short:mt-4 short:space-y-1.5 short:text-[15px]">
             {[
               ["Report in 20 seconds.", "Snap a photo. AI fills in the category and severity."],
               ["Routed to the right desk.", "Your society, campus or the municipality."],
@@ -82,7 +82,7 @@ export default async function Landing() {
               </li>
             ))}
           </ul>
-          <div className="mt-9 flex flex-wrap items-center gap-3">
+          <div className="mt-7 flex flex-wrap items-center gap-3 short:mt-5">
             <span className="ring-rainbow rounded-full">
               <Link
                 href={cta}
@@ -95,7 +95,7 @@ export default async function Landing() {
               Try the demo
             </ButtonLink>
           </div>
-          <div className="mt-8 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2 short:hidden">
             {[
               [Building2, "Societies"],
               [GraduationCap, "Colleges"],
@@ -116,8 +116,14 @@ export default async function Landing() {
       </section>
 
       {/* Problem strip */}
-      <section className="border-y border-bone bg-mist">
-        <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-14 sm:px-6 md:grid-cols-3">
+      <section className="flex min-h-[calc(100svh-4rem)] snap-start flex-col justify-center border-y border-bone bg-mist">
+        <div className="mx-auto w-full max-w-[1200px] px-4 py-14 sm:px-6">
+          <div className="label-mono">The problem</div>
+          <h2 className="mt-3 max-w-2xl font-display text-[36px] leading-[1.1] font-bold tracking-[-0.04em] sm:text-heading short:!text-[38px]">
+            Waste management still runs on phone calls and paper.
+          </h2>
+        </div>
+        <div className="mx-auto grid w-full max-w-[1200px] gap-8 px-4 pb-14 sm:px-6 md:grid-cols-3">
           {[
             ["Overflowing bins & missed pickups", "Collection runs on phone calls and registers. Problems stay invisible until they pile up."],
             ["No way to report or follow up", "Residents don't know who to tell, and never hear back once they do."],
@@ -133,14 +139,14 @@ export default async function Landing() {
       </section>
 
       {/* Flow */}
-      <section id="flow" className="mx-auto max-w-[1200px] px-4 py-20 sm:px-6">
+      <section id="flow" className="mx-auto flex min-h-[calc(100svh-4rem)] snap-start max-w-[1200px] flex-col justify-center px-4 py-14 sm:px-6">
         <div className="max-w-2xl">
           <div className="label-mono">How it works</div>
           <h2 className="mt-3 font-display text-[36px] leading-[1.1] font-bold tracking-[-0.04em] sm:text-heading">
             From photo to clean street, with every step on record.
           </h2>
         </div>
-        <ol className="mt-12 grid gap-4 md:grid-cols-4">
+        <ol className="mt-10 grid gap-4 md:grid-cols-4">
           {[
             [Camera, "Report", "Photo, auto GPS, and AI-suggested category. Or scan a QR code on the bin."],
             [MapPin, "Route", "Inside a society or campus it goes to that admin. On public roads it goes to the ward's municipality."],
@@ -165,13 +171,13 @@ export default async function Landing() {
       </section>
 
       {/* Audiences */}
-      <section id="audiences" className="bg-plaster/60">
-        <div className="mx-auto max-w-[1200px] px-4 py-20 sm:px-6">
+      <section id="audiences" className="flex min-h-[calc(100svh-4rem)] snap-start flex-col justify-center bg-plaster/60">
+        <div className="mx-auto w-full max-w-[1200px] px-4 py-14 short:py-6 sm:px-6">
           <div className="label-mono">Who it&apos;s for</div>
-          <h2 className="mt-3 max-w-2xl font-display text-[36px] leading-[1.1] font-bold tracking-[-0.04em] sm:text-heading">
+          <h2 className="mt-3 max-w-2xl font-display text-[36px] leading-[1.1] font-bold tracking-[-0.04em] sm:text-heading short:!text-[38px]">
             One platform. Every place that makes waste.
           </h2>
-          <div className="mt-12 grid gap-4 md:grid-cols-2">
+          <div className="mt-10 grid gap-4 short:mt-6 short:gap-3 md:grid-cols-2">
             {[
               [Building2, "Residential societies", "The secretary registers the society and invites residents by email or a 6-letter code. Internal issues stay internal. Bulk pickups go to the municipality as one batch."],
               [GraduationCap, "Colleges & campuses", "Students join automatically with their college email. Hostels and buildings become units, and QR codes on campus bins take reports straight to facilities."],
@@ -180,7 +186,7 @@ export default async function Landing() {
             ].map(([Icon, t, d]) => {
               const I = Icon as typeof Building2;
               return (
-                <div key={t as string} className="rounded-[20px] bg-white p-7">
+                <div key={t as string} className="rounded-[20px] bg-white p-6 short:p-5">
                   <I className="h-6 w-6 text-violet" />
                   <h3 className="mt-4 font-display text-xl font-bold tracking-[-0.03em]">{t as string}</h3>
                   <p className="mt-2 text-[15px] text-slate">{d as string}</p>
@@ -192,7 +198,7 @@ export default async function Landing() {
       </section>
 
       {/* Municipality dark panel */}
-      <section id="municipality" className="mx-auto max-w-[1200px] px-4 py-20 sm:px-6">
+      <section id="municipality" className="mx-auto flex min-h-[calc(100svh-4rem)] snap-start max-w-[1200px] flex-col justify-center px-4 py-14 sm:px-6">
         <div className="grid gap-10 rounded-[20px] bg-[image:var(--gradient-dark-fade)] p-8 text-white sm:p-12 lg:grid-cols-2">
           <div>
             <div className="label-mono !text-fog">For the municipality</div>

@@ -60,8 +60,18 @@ async function cleanup() {
     await db.from("organizations").delete().in("created_by", ids);
   }
   await db.from("municipalities").delete().eq("name", MUNI_NAME);
-  for (const u of demoUsers) await db.auth.admin.deleteUser(u.id);
-  console.log(`• removed ${demoUsers.length} previous demo users`);
+  let removed = 0;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data: again } = await db.auth.admin.listUsers({ perPage: 1000 });
+    const left = (again?.users ?? []).filter((u) => u.email?.endsWith(`@${DOMAIN}`) || u.email?.endsWith("@demo-institute.edu.in"));
+    if (!left.length) break;
+    for (const u of left) {
+      const { error } = await db.auth.admin.deleteUser(u.id);
+      if (error) console.warn(`  could not delete ${u.email}: ${error.message}`);
+      else removed++;
+    }
+  }
+  console.log(`• removed ${removed} previous demo users`);
 }
 
 async function createUser(email: string, full_name: string, phone: string | null, extra: Record<string, unknown> = {}) {
@@ -179,7 +189,7 @@ async function main() {
   const gv = orgs.get("gv")!;
   const memberRows = [
     { org_id: gv.id, user_id: citizen, role: "member", status: "active", unit_label: "B-204" },
-    ...residents.slice(6, 11).map((u, i) => ({ org_id: gv.id, user_id: u, role: "member", status: "active", unit_label: `${"ABC"[i % 3]}-${101 + i * 7}` })),
+    ...residents.slice(7, 11).map((u, i) => ({ org_id: gv.id, user_id: u, role: "member", status: "active", unit_label: `${"ABC"[i % 3]}-${101 + i * 7}` })),
     { org_id: gv.id, user_id: residents[11]!, role: "member", status: "pending", unit_label: "C-310" },
     { org_id: gv.id, user_id: residents[6]!, role: "staff", status: "active", unit_label: "Housekeeping" },
     ...students.map((u, i) => ({ org_id: orgs.get("it")!.id, user_id: u, role: "member", status: "active", unit_label: `Hostel ${i + 1}` })),
@@ -314,7 +324,8 @@ async function main() {
       source: "app",
       ai: rand() > 0.3 ? { is_waste: true, category, severity, waste_types: [pick(["dry", "wet"]), pick(["dry", "wet", "hazardous"])], description: pick(descriptions[category] ?? descriptions.other!), confidence: 0.7 + rand() * 0.28 } : null,
     };
-    tickets.push({ ...t, _events: lifecycle(t, created, "municipal", reporter, officer) });
+    const events = lifecycle(t, created, "municipal", reporter, officer);
+    tickets.push({ ...t, _events: events });
   }
 
   // Internal organization issues (+ some escalated, + QR reports)
@@ -388,7 +399,7 @@ async function main() {
   const ticketRows = tickets.map(({ _events, ...t }) => t);
   const inserted: { id: string }[] = [];
   for (let i = 0; i < ticketRows.length; i += 50) {
-    inserted.push(...(await must(db.from("tickets").insert(ticketRows.slice(i, i + 50)).select("id"), "tickets")));
+    inserted.push(...(await must(db.from("tickets").insert(ticketRows.slice(i, i + 50), { defaultToNull: false }).select("id"), "tickets")));
   }
   const ids = inserted.map((r) => r.id);
 
