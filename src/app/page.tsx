@@ -18,6 +18,7 @@ import { ButtonLink } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
 import { Hero } from "@/components/landing/hero";
+import { HeroFluid } from "@/components/landing/hero-fluid";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { SiteFooter } from "@/components/landing/site-footer";
 import Bucket from "@/components/bucket";
@@ -60,6 +61,8 @@ export default async function Landing() {
 
       {/* 1 · Hero */}
       <section className={cn(SCREEN, "relative isolate overflow-hidden py-10")}>
+        {/* ASCII cursor trail behind the whole hero (text + 3D city card) */}
+        <HeroFluid />
         <Hero ctaHref={cta} />
       </section>
 

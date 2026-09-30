@@ -1,7 +1,13 @@
 "use server";
 
 import { getViewer } from "@/lib/session";
-import { analyzeComplaintImage, classifyWasteItem, type ComplaintAnalysis, type ItemClassification } from "@/lib/groq";
+import {
+  AiError,
+  analyzeComplaintImage,
+  classifyWasteItem,
+  type ComplaintAnalysis,
+  type ItemClassification,
+} from "@/lib/groq";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -11,14 +17,25 @@ function validImage(dataUrl: string) {
   return /^data:image\/(jpeg|png|webp);base64,/.test(dataUrl) && dataUrl.length <= MAX_DATA_URL;
 }
 
+/**
+ * User-facing message for an AI failure. In development the real cause is shown
+ * (e.g. an invalid key) so it can be fixed; in production users get a friendly fallback.
+ */
+function failure(context: string, e: unknown, fallback: string): { ok: false; error: string } {
+  const err = e instanceof AiError ? e : null;
+  console.error(`[ai] ${context} failed${err ? ` (${err.kind})` : ""}:`, e);
+  if (err?.kind === "rate_limit") return { ok: false, error: "AI is busy right now. Try again in a minute." };
+  if (process.env.NODE_ENV !== "production" && err) return { ok: false, error: `AI error (${err.kind}): ${err.message}` };
+  return { ok: false, error: fallback };
+}
+
 export async function analyzePhotoAction(dataUrl: string): Promise<Result<ComplaintAnalysis>> {
   if (!(await getViewer())) return { ok: false, error: "Sign in to use AI tagging" };
   if (!validImage(dataUrl)) return { ok: false, error: "Unsupported or too large image" };
   try {
     return { ok: true, data: await analyzeComplaintImage(dataUrl) };
   } catch (e) {
-    console.error("analyzePhoto", e);
-    return { ok: false, error: "AI is unavailable right now. Pick the category manually." };
+    return failure("analyzePhoto", e, "AI is unavailable right now. Pick the category manually.");
   }
 }
 
@@ -28,7 +45,6 @@ export async function classifyItemAction(dataUrl: string): Promise<Result<ItemCl
   try {
     return { ok: true, data: await classifyWasteItem(dataUrl) };
   } catch (e) {
-    console.error("classifyItem", e);
-    return { ok: false, error: "AI is unavailable right now. Try the search below instead." };
+    return failure("classifyItem", e, "AI is unavailable right now. Try the search below instead.");
   }
 }
