@@ -1,26 +1,141 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* SafaiSetu design tokens — see DESIGN.md */
+@theme {
+  --color-ink: #202020;
+  --color-onyx: #090c1d;
+  --color-carbon: #2a2a2a;
+  --color-slate: #646464;
+  --color-ash: #838383;
+  --color-fog: #b3b3b3;
+  --color-cloud: #d4d4d4;
+  --color-bone: #e8e8e8;
+  --color-mist: #f8f9fa;
+  --color-plaster: #e9ebf0;
+  --color-mercury: #eeeeee;
+  --color-violet: #6647f0;
+  --color-blue: #0091ff;
+  --color-mint: #6ee7b7;
+  --color-emerald: #00c07a;
+  --color-teal: #16c0a4;
+  --color-amber: #fd9a46;
+  --color-coral: #fc6d7b;
+  --color-pink: #fa24ce;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-display: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-sometype), "Sometype Mono", ui-monospace, monospace;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --text-display: 80px;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.04em;
+  --text-heading-lg: 60px;
+  --text-heading-lg--line-height: 1.1;
+  --text-heading-lg--letter-spacing: -0.035em;
+  --text-heading: 48px;
+  --text-heading--line-height: 1.15;
+  --text-heading--letter-spacing: -0.035em;
+  --text-heading-sm: 34px;
+  --text-heading-sm--line-height: 1.2;
+  --text-heading-sm--letter-spacing: -0.04em;
+
+  --shadow-subtle: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
+  --shadow-float: rgba(18, 43, 165, 0.04) 0px 1px 1px -0.5px, rgba(18, 43, 165, 0.04) 0px 3px 3px -1.5px,
+    rgba(18, 43, 165, 0.04) 0px 6px 6px -3px, rgba(18, 43, 165, 0.04) 0px 12px 12px -6px;
+  --shadow-product: rgba(0, 0, 0, 0.12) -24px 24px 48px -12px, rgba(0, 0, 0, 0.08) -6px 6px 16px 0px;
+
+  --ease-settle: cubic-bezier(0.33, 1, 0.68, 1);
+
+  --animate-rise: rise 0.45s var(--ease-settle) both;
+  --animate-spin-ring: spin-ring 3.2s linear infinite;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes spin-ring {
+    to { --ring-angle: 450deg; }
   }
 }
 
+:root {
+  --gradient-rainbow-conic: conic-gradient(from var(--ring-angle), rgb(125, 91, 231) 19%, rgb(188, 63, 218) 28%,
+    rgb(250, 36, 206) 37%, rgb(251, 73, 165) 45%, rgb(252, 109, 123) 52%, rgb(253, 132, 97) 55%,
+    rgb(253, 154, 70) 58%, rgb(246, 135, 198) 65%, rgb(163, 160, 224) 80%, rgb(79, 185, 250) 95%,
+    rgb(0, 145, 255) 100%);
+  --gradient-primary: linear-gradient(83deg, #40ddff -5%, #7612fa 51%, #fa18e3 125%);
+  --gradient-dark-fade: linear-gradient(#111111 24%, #000000);
+}
+
+@property --ring-angle {
+  syntax: "<angle>";
+  initial-value: 90deg;
+  inherits: false;
+}
+
+html {
+  color-scheme: light;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "calt" 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--color-onyx);
+  text-wrap: balance;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-blue) 22%, transparent);
+}
+
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ash);
+}
+
+@utility text-gradient-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Animated rainbow border: one per page, on the hero CTA only */
+@utility ring-rainbow {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--gradient-rainbow-conic);
+    animation: var(--animate-spin-ring);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Leaflet sits inside rounded cards */
+.leaflet-container {
+  font-family: var(--font-sans);
+  background: var(--color-mist);
 }

@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  experimental: {
+    // compressed photos for AI analysis are sent as data URLs
+    serverActions: { bodySizeLimit: "2mb" },
+  },
 };
 
 export default nextConfig;
