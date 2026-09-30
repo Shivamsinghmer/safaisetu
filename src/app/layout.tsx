@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import { ViewTransition } from "react";
 import "./globals.css";
 import { InlineScript } from "@/components/inline-script";
+import { PAGE_NAV } from "@/components/nav-link";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -45,8 +46,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <InlineScript html={THEME_SCRIPT} />
       </head>
       <body className="min-h-full">
-        {/* Route navigations are React transitions: the old page blurs out, the new one sharpens in (globals.css) */}
-        <ViewTransition default="page-blur">
+        {/* Page navigations (Links tagged "page-nav", see components/nav-link) blur between pages (globals.css).
+            Other transitions (live refreshes, server-action revalidations) update without animating. */}
+        <ViewTransition default={{ [PAGE_NAV]: "page-blur", default: "none" }}>
           <div className="min-h-full">{children}</div>
         </ViewTransition>
       </body>

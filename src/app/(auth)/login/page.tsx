@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import type { Metadata } from "next";
 import { Building2, GraduationCap, HardHat, Landmark, User } from "lucide-react";
 import { demoSignInAction } from "@/app/actions/auth";

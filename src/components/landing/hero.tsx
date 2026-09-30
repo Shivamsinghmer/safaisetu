@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import { ArrowRight, Building2, GraduationCap, Landmark, Sparkles, Store } from "lucide-react";
 
 const LINES = ["Clean cities start", "with one photo."];

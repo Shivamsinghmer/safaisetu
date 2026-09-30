@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import { ChevronRight, Clock, QrCode, Truck, ArrowUpRight } from "lucide-react";
 import { SeverityTag, StatusPill } from "@/components/ui";
 import { categoryLabel } from "@/lib/constants";
@@ -93,6 +93,7 @@ export function FilterTabs({
           key={t.key}
           href={t.href}
           scroll={false}
+          transitionTypes={[]}
           aria-current={t.key === active ? "page" : undefined}
           className={cn(
             "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-bold transition-colors",

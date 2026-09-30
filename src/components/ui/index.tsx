@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import type { ComponentProps, ReactNode } from "react";
 import { cn, initials } from "@/lib/utils";
 import { SEVERITY_META, STATUS_META } from "@/lib/constants";

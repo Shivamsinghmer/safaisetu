@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Card, CardHeader, StatCard } from "@/components/ui";
 import { TicketList } from "@/components/ticket-list";

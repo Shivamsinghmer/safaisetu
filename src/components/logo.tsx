@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import { cn } from "@/lib/utils";
 
 export function LogoMark({ className }: { className?: string }) {

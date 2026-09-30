@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import { ClipboardCheck } from "lucide-react";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { FilterTabs, TicketList } from "@/components/ticket-list";
@@ -84,6 +84,7 @@ function WardChip({ href, active, children }: { href: string; active: boolean; c
     <Link
       href={href}
       scroll={false}
+      transitionTypes={[]}
       className={cn(
         "inline-flex h-7 shrink-0 items-center rounded-full border px-3 text-[12px] font-bold",
         active ? "border-blue bg-blue/5 text-blue" : "border-bone bg-white text-carbon hover:bg-mist",

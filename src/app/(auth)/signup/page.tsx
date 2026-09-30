@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import type { Metadata } from "next";
 import { SignUpForm } from "../auth-forms";
 

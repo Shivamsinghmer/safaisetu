@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import { ArrowRight, Camera, Clock, Copy, PartyPopper, Send, ShieldAlert, Truck, XCircle } from "lucide-react";
 import { ButtonLink, Card, CardHeader, Pill, StatCard } from "@/components/ui";
 import { SubmitButton } from "@/components/ui/submit-button";

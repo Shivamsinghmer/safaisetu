@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/nav-link";
 import { ArrowRight, Check, MoreHorizontal, Zap } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Building03Icon, Mortarboard01Icon, Store01Icon } from "@hugeicons/core-free-icons";
