@@ -15,7 +15,7 @@ const METRICS = [
 export function Hero({ ctaHref }: { ctaHref: string }) {
   return (
     <div className="relative mx-auto w-full max-w-[1240px] px-4 sm:px-6">
-      <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10">
+      <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10">
         {/* Copy */}
         <div className="text-center lg:text-left">
           <span className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-[13px] font-medium text-muted-foreground">

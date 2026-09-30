@@ -68,7 +68,35 @@ resolved = mint + night · closed = emerald ring · reopened = pink + snow · re
 - ✅ `bg-primary` for the main action, `secondary` or `ghost` buttons for the rest.
 - ✅ Test every new screen in light **and** dark.
 - ❌ Hard-coded hex colors or `text-white` on theme surfaces (use `text-primary-foreground` / `snow`).
+- ❌ `white/xx` alpha classes on fixed-dark panels. `white` is the theme card color and turns dark in dark mode. Use `snow/xx`.
 - ❌ Decorative gradients on cards; more than one rainbow ring per page.
+
+## Responsive & PWA
+Every screen must work at **375px** (phone) in light and dark, with no sideways scroll.
+- **Grids:** when a grid has breakpoint columns (`md:grid-cols-2`), always add `grid-cols-1` at the base size. Without it,
+  implicit columns size to their content and push the page wider than the screen.
+- **Tables:** on phones, render stacked cards (`sm:hidden`) and keep the table for `sm+` (`hidden sm:block`). See the
+  municipality organization directory and ward hotspots.
+- **Stat rows:** use `StatCard compact` in a `grid-cols-3 gap-2 sm:gap-3` row, so three stats sit on one line.
+- **App shell:** the mobile header and drawer pad with `env(safe-area-inset-top)`. The bottom tab bar pads with
+  `env(safe-area-inset-bottom)`. Its height is the CSS variable `--tabbar-h`. Sticky bottom bars use
+  `bottom-[var(--tabbar-h)]` with an opaque background.
+- **Tap targets:** at least 36px (icon buttons are `h-9 w-9`). Inputs use 16px text on phones so iOS doesn't zoom.
+- **Maps:** `.leaflet-container` is isolated (`z-index: 0`) so it never covers the header or tab bar. Leaflet theme
+  overrides are scoped under `.leaflet-container`, because `leaflet.css` loads later and would otherwise win.
+- **Charts:** Recharts grid and ticks are themed in `globals.css`.
+- **PWA:** `viewportFit: "cover"`, `appleWebApp`, generated icons and manifest shortcuts. See
+  [docs/architecture.md](docs/architecture.md#pwa).
+
+## Auth pages
+A split layout (`src/app/(auth)/layout.tsx`). On `lg+`, the left side is a sticky, always-dark forest-green brand panel
+(`oklch(0.22 0.035 140)`, dot-grid texture, one soft green glow). It holds a headline, a product preview card (a
+complaint moving through Reported, Assigned, In progress and Resolved) and audience chips. It has no testimonials or
+invented stats. The right side is the themed form (max 400px).
+**Demo accounts** (`src/app/(auth)/demo-roles.tsx`, one shared role list):
+- **`2xl+` (≥1536px):** `DemoRolesPanel` sits on the right side of the brand panel. It has a heading, a line saying one click signs you in with sample data, and five full rows (icon, role, description, arrow) in a glass card. The form column then shows only the form.
+- **Below `2xl`:** `DemoRolesTiles` sits under the form after an "or" divider. It is a muted panel with the same heading and a row of five equal tiles.
+Both pages must fit one screen with no scroll on desktop. Use the `tight` variant (lg+ and ≤820px tall) to trim spacing, and hide the panel paragraph on short screens.
 
 ## Landing hero 3D scene
 - `src/components/landing/city-scene/`: a procedural low-poly city block (no model files): road loop with a municipal

@@ -30,7 +30,7 @@ export function RegisterOrgForm({ userId }: { userId: string }) {
   }
 
   return (
-    <form action={action} className="grid gap-8 lg:grid-cols-2">
+    <form action={action} className="grid grid-cols-1 gap-8 lg:grid-cols-2">
       <input type="hidden" name="type" value={type} />
       {proof && <input type="hidden" name="proof_path" value={proof.path} />}
 

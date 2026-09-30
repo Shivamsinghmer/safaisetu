@@ -79,7 +79,7 @@ export default async function Landing() {
             title="One bin for every complaint in the city."
             text="Reports from homes, hostels, markets and roads land in one place, already sorted by type, severity and ward."
           />
-          <div className="grid gap-3 sm:gap-4 lg:grid-cols-6 lg:grid-rows-2">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-6 lg:grid-rows-2">
             <Tile className="lg:col-span-4 lg:row-span-2" pad={false}>
               <div className="flex h-full flex-col">
                 {/* Above the bucket layer: falling chips pass behind the header, never over it */}
@@ -116,7 +116,7 @@ export default async function Landing() {
             title="Routed, assigned and proven clean."
             text="Every organization answers for its own premises. The municipality sees everything, assigns field workers and watches the clock."
           />
-          <div className="grid gap-3 sm:gap-4 lg:grid-cols-6 lg:grid-rows-2">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-6 lg:grid-rows-2">
             <Tile className="lg:col-span-2" icon={<MapPin className="h-5 w-5" />}>
               <TileLabel>Route</TileLabel>
               <TileTitle>Society first, city when needed</TileTitle>
@@ -153,7 +153,7 @@ export default async function Landing() {
             title="Built for every place that makes waste."
             text="One account works everywhere. Join your society with a code, your campus with your college email, and report anything on the street."
           />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { i: Building2, t: "Societies", d: "Secretaries invite residents, handle internal issues and batch bulk pickups." },
               { i: GraduationCap, t: "Colleges", d: "Students join automatically with their college email. Hostels become units." },

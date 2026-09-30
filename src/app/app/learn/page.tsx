@@ -21,7 +21,7 @@ export default function LearnPage() {
 
       <section className="mt-10">
         <h2 className="mb-4 font-display text-xl font-bold tracking-[-0.03em]">The four streams</h2>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {(Object.keys(STREAM_GUIDE) as WasteStream[]).map((key) => {
             const s = WASTE_STREAMS[key];
             const g = STREAM_GUIDE[key];
@@ -42,7 +42,7 @@ export default function LearnPage() {
                     </span>
                   ))}
                 </div>
-                <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                   <ul className="space-y-1.5">
                     {g.do.map((d) => (
                       <li key={d} className="flex gap-2 text-ink">
@@ -71,7 +71,7 @@ export default function LearnPage() {
 
       <section className="mt-10 rounded-[20px] bg-[image:var(--gradient-dark-fade)] p-8 text-snow sm:p-10">
         <div className="label-mono !text-haze">Why it matters</div>
-        <div className="mt-4 grid gap-6 sm:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3">
           {[
             ["50%+", "of Indian city waste is wet, organic waste that can be composted"],
             ["4 bins", "wet, dry, hazardous and e-waste, as set by India's SWM Rules 2016"],

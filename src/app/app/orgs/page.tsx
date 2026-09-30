@@ -14,7 +14,7 @@ export default function OrgsPage() {
         description="Societies, campuses and public places get their own workspace. Complaints go to the right admin first, and the municipality sees everything in its region."
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader label="Member" title="Join with an invite code" />
           <div className="p-5">

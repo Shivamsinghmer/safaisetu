@@ -49,7 +49,7 @@ export default async function MuniOrgsPage({ searchParams }: PageProps<"/app/mun
           <h2 className="mb-3 font-display text-lg font-bold tracking-[-0.02em]">
             Awaiting verification <span className="font-mono text-sm text-ash">({pending.length})</span>
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {pending.map((o) => {
               const Icon = TYPE_ICON[o.type];
               const r = registrants?.find((p) => p.id === o.created_by);
@@ -126,7 +126,41 @@ export default async function MuniOrgsPage({ searchParams }: PageProps<"/app/mun
       {approved.length ? (
         <Card className="overflow-hidden">
           <CardHeader label="Directory" title={`${approved.length} verified`} />
-          <div className="overflow-x-auto">
+          {/* Phones: one card per organization instead of a sideways-scrolling table */}
+          <ul className="divide-y divide-bone sm:hidden">
+            {approved.map((o) => {
+              const openCount = open?.filter((t) => t.org_id === o.id).length ?? 0;
+              const memberCount = members?.filter((m) => m.org_id === o.id).length ?? 0;
+              return (
+                <li key={o.id} className="px-4 py-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="line-clamp-2 leading-snug font-semibold text-ink">{o.name}</div>
+                      <div className="truncate text-xs text-slate">{o.address}</div>
+                    </div>
+                    <Pill className="shrink-0 bg-mist text-carbon">{ORG_TYPE_META[o.type].label}</Pill>
+                  </div>
+                  <dl className="mt-2.5 grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)] gap-3 text-xs">
+                    <div className="min-w-0">
+                      <dt className="text-ash">Ward</dt>
+                      <dd className="truncate text-carbon">{wardName(o.ward_id)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-ash">Members</dt>
+                      <dd className="font-mono text-carbon tabular-nums">{memberCount}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-ash">Open tickets</dt>
+                      <dd className={openCount > 5 ? "font-mono font-semibold text-coral tabular-nums" : "font-mono text-carbon tabular-nums"}>
+                        {openCount}
+                      </dd>
+                    </div>
+                  </dl>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-bone text-left">

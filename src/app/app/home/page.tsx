@@ -50,14 +50,14 @@ export default async function HomePage() {
         </p>
       </div>
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <QuickAction href="/app/report" icon={<Camera className="h-5 w-5" />} title="Report an issue" text="Overflowing bin, garbage on road, dumping" primary />
         <QuickAction href="/app/pickup" icon={<Truck className="h-5 w-5" />} title="Request pickup" text="Bulky items, e-waste, debris" />
         <QuickAction href="/app/learn" icon={<BookOpen className="h-5 w-5" />} title="Which bin?" text="Snap an item, AI tells you where it goes" />
         <QuickAction href="/app/orgs" icon={<UserPlus className="h-5 w-5" />} title="Join your society" text="Use an invite code or register yours" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-lg font-bold tracking-[-0.02em]">Recent activity</h2>

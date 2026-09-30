@@ -63,7 +63,7 @@ export function SiteFooter() {
   return (
     <footer className="relative isolate overflow-hidden border-t border-border bg-card">
       <div className="mx-auto w-full max-w-[1240px] px-4 pt-10 sm:px-6 sm:pt-16">
-        <div className="grid gap-12 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           {/* Brand */}
           <div className="lg:col-span-5">
             <Logo />

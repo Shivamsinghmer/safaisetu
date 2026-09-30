@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description:
     "Report waste issues, request pickups and track every complaint to resolution. One platform connecting residents, campuses, public places and the municipality.",
   applicationName: "SafaiSetu",
+  appleWebApp: { capable: true, title: "SafaiSetu", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -30,6 +32,8 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
+  // Draw under the notch / home indicator; the shell pads with safe-area insets
+  viewportFit: "cover",
 };
 
 const THEME_SCRIPT = `try{var t=localStorage.getItem("safaisetu-theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}`;

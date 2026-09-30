@@ -27,7 +27,7 @@ export async function proxy(request: NextRequest) {
   const signedIn = Boolean(data?.claims?.sub);
   const { pathname, search } = request.nextUrl;
 
-  if (!signedIn && (pathname.startsWith("/app") || pathname.startsWith("/r/"))) {
+  if (!signedIn && (pathname === "/app" || pathname.startsWith("/app/") || pathname.startsWith("/r/"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = `?next=${encodeURIComponent(pathname + search)}`;
@@ -44,5 +44,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|apple-icon|pwa-icon/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };

@@ -26,7 +26,7 @@ export function NoticeList({
               {canDeleteFor && n.author_id === canDeleteFor && (
                 <form action={deleteNoticeAction}>
                   <input type="hidden" name="notice_id" value={n.id} />
-                  <button className="cursor-pointer rounded-full p-1 text-ash hover:bg-black/4 hover:text-coral" aria-label="Delete notice">
+                  <button className="-m-2 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-ash hover:bg-black/4 hover:text-coral" aria-label="Delete notice">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </form>

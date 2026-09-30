@@ -130,7 +130,7 @@ export function ReportForm({
   }
 
   return (
-    <form action={action} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
+    <form action={action} className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
       <input type="hidden" name="kind" value="issue" />
       <input type="hidden" name="photo_path" value={photoPath} />
       <input type="hidden" name="category" value={category} />
@@ -144,7 +144,7 @@ export function ReportForm({
       <div className="flex min-w-0 flex-col gap-5">
         {/* 1 · Photo */}
         <StepCard n={1} title="Photo of the problem" hint="A clear photo lets AI fill in the rest." done={steps.photo}>
-          <div className="grid gap-5 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
             <PhotoCapture
               userId={userId}
               onCaptured={onPhoto}
@@ -406,7 +406,7 @@ export function ReportForm({
       </aside>
 
       {/* Mobile: sticky submit bar above the tab bar */}
-      <div className="sticky bottom-20 z-20 -mx-4 border-t border-border bg-background/90 px-4 py-3 backdrop-blur lg:hidden">
+      <div className="sticky bottom-[var(--tabbar-h)] z-20 -mx-4 border-t border-border bg-background px-4 py-3 shadow-[0_-8px_16px_-12px_rgb(0_0_0/0.25)] sm:-mx-6 sm:px-6 lg:hidden">
         <SubmitButton size="lg" pendingText="Submitting…" disabled={!ready} className="w-full">
           {ready ? "Submit report" : !steps.photo ? "Add a photo to continue" : "Pick a category to continue"}
         </SubmitButton>

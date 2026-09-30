@@ -132,18 +132,24 @@ export function StatCard({
   value,
   caption,
   tone,
+  compact,
 }: {
   label: string;
   value: ReactNode;
   caption?: ReactNode;
   tone?: "default" | "warn" | "danger" | "good";
+  /** Tighter sizing on phones so three cards fit in one row */
+  compact?: boolean;
 }) {
   return (
-    <Card className="p-5">
-      <div className="label-mono">{label}</div>
+    <Card className={cn("h-full", compact ? "p-3 sm:p-5" : "p-5")}>
+      <div className={cn("label-mono", compact && "text-[10px] tracking-[0.06em] sm:text-[11px] sm:tracking-[0.08em]")}>
+        {label}
+      </div>
       <div
         className={cn(
-          "mt-2 font-display text-[34px] leading-none font-bold tracking-[-0.04em] text-onyx tabular-nums",
+          "mt-2 font-display leading-none font-bold tracking-[-0.04em] text-onyx tabular-nums",
+          compact ? "text-[26px] sm:text-[34px]" : "text-[34px]",
           tone === "danger" && "text-coral",
           tone === "warn" && "text-amber",
           tone === "good" && "text-emerald",

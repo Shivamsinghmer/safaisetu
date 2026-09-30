@@ -36,7 +36,7 @@ export default async function WorkersPage() {
     <>
       <PageHeader label="Municipality" title="Field workers" description="Sanitation staff who receive assignments and upload proof of cleanup." />
       {rows.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map((w) => (
             <Card key={w.id} className="p-5">
               <div className="flex items-center gap-3">

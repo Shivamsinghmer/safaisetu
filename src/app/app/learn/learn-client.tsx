@@ -39,7 +39,7 @@ export function BinClassifier() {
 
   return (
     <Card className="overflow-hidden">
-      <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div className="relative border-b border-bone bg-mist md:border-r md:border-b-0">
           <input
             ref={inputRef}
@@ -158,7 +158,7 @@ export function ItemSearch() {
           aria-label="Search waste items"
         />
       </div>
-      <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+      <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {results.map((i) => {
           const s = WASTE_STREAMS[i.stream as WasteStream];
           return (

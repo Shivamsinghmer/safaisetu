@@ -67,7 +67,7 @@ export function FeatureShowcase() {
         </div>
       </header>
 
-      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
         <FeatureCard
           delay="0.5s"
           label="01 · Report"

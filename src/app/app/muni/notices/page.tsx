@@ -22,7 +22,7 @@ export default async function MuniNoticesPage() {
         title="Announcements"
         description="Reaches every member of every organization in your wards: schedule changes, drives and advisories."
       />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <Card className="self-start">
           <CardHeader label="New" title="Announce to the city" />
           <div className="p-5">

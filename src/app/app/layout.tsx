@@ -92,7 +92,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
       }
       if (m.role === "admin") items.push({ href: `${base}/members`, label: meta.members, icon: "members" });
       items.push({ href: `${base}/notices`, label: "Notices", icon: "notices" });
-      if (m.role === "admin" && org.type !== "society") items.push({ href: `${base}/qr`, label: "QR codes", icon: "qr" });
+      if (m.role === "admin") items.push({ href: `${base}/qr`, label: "QR codes", icon: "qr" });
     }
     sections.push({
       title: m.role === "admin" ? `${meta.admin} · ${org.status === "approved" ? "admin" : org.status}` : meta.label,

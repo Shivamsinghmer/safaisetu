@@ -144,7 +144,7 @@ export default async function MuniDashboard() {
         />
       </Card>
 
-      <div className="mb-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card>
           <CardHeader label="Trend" title="New complaints per day" />
           <div className="p-5">
@@ -159,10 +159,44 @@ export default async function MuniDashboard() {
         </Card>
       </div>
 
-      <div className="mb-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card className="overflow-hidden">
           <CardHeader label="Hotspots" title="Wards ranked by open complaints" />
-          <div className="overflow-x-auto">
+          {/* Phones: compact ward rows instead of a sideways-scrolling table */}
+          <ul className="divide-y divide-bone sm:hidden">
+            {wardStats.map((w, i) => (
+              <li key={w.ward.id}>
+                <Link href={`/app/muni/tickets?ward=${w.ward.id}`} className="block px-4 py-3.5 active:bg-mist">
+                  <div className="flex items-center gap-2">
+                    <span className="min-w-0 truncate font-semibold text-ink">{w.ward.name}</span>
+                    <span className="shrink-0 font-mono text-[11px] text-ash">{w.ward.code}</span>
+                    {i === 0 && w.open > 0 && (
+                      <span className="ml-auto shrink-0 rounded-full bg-coral/10 px-2 py-0.5 text-[10px] font-semibold text-coral">Top hotspot</span>
+                    )}
+                  </div>
+                  <dl className="mt-2 grid grid-cols-4 gap-2 text-xs">
+                    <div>
+                      <dt className="text-ash">Open</dt>
+                      <dd className="font-mono text-carbon tabular-nums">{w.open}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-ash">Past SLA</dt>
+                      <dd className={cn("font-mono tabular-nums", w.overdue ? "font-semibold text-coral" : "text-carbon")}>{w.overdue}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-ash">{DAYS}d total</dt>
+                      <dd className="font-mono text-carbon tabular-nums">{w.total}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-ash">Avg fix</dt>
+                      <dd className="font-mono text-carbon tabular-nums">{formatHours(w.avg)}</dd>
+                    </div>
+                  </dl>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-bone text-left">

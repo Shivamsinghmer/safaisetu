@@ -21,7 +21,7 @@ export function PickupForm({ userId, orgs }: { userId: string; orgs: ReportOrg[]
   const [tomorrow] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10));
 
   return (
-    <form action={action} className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+    <form action={action} className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
       <input type="hidden" name="kind" value="pickup" />
       <input type="hidden" name="category" value={type} />
       <input type="hidden" name="severity" value="low" />
@@ -31,7 +31,7 @@ export function PickupForm({ userId, orgs }: { userId: string; orgs: ReportOrg[]
       <div className="flex flex-col gap-6">
         <section>
           <h2 className="mb-3 font-display text-[17px] font-bold tracking-[-0.02em]">What needs collecting?</h2>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {PICKUP_TYPES.map((t) => (
               <button
                 key={t.value}

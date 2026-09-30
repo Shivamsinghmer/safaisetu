@@ -33,7 +33,8 @@ const pinIcon = L.divIcon({
   className: "",
   iconSize: [28, 36],
   iconAnchor: [14, 34],
-  html: `<svg width="28" height="36" viewBox="0 0 28 36"><path d="M14 35s12-11.2 12-21A12 12 0 0 0 2 14c0 9.8 12 21 12 21z" fill="#202020"/><circle cx="14" cy="14" r="4.5" fill="#fff"/></svg>`,
+  // Brand green with a white outline: readable on light and dark (inverted) map tiles
+  html: `<svg width="28" height="36" viewBox="0 0 28 36" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))"><path d="M14 35s12-11.2 12-21A12 12 0 0 0 2 14c0 9.8 12 21 12 21z" fill="#3f7a28" stroke="#fff" stroke-width="1.5"/><circle cx="14" cy="14" r="4.5" fill="#fff"/></svg>`,
 });
 
 const orgIcon = (color: string) =>

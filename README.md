@@ -10,11 +10,19 @@ issues, request pickups and track every complaint to resolution.
 - **Municipality** verifies organizations, assigns field workers, tracks SLAs and sees hotspots on a live map.
 - **Field workers** work assigned tasks and upload an after photo as proof.
 
-Design system: see [DESIGN.md](DESIGN.md).
+Installable as a PWA on phones (home-screen icon, full-screen, shortcuts to Report, Pickup and Tickets).
+
+## Docs
+| Doc | What's in it |
+|---|---|
+| [DESIGN.md](DESIGN.md) | Design system: theme tokens, type, motion, responsive and PWA rules |
+| [docs/architecture.md](docs/architecture.md) | Roles, request flow, data model, routing, state machine, storage, AI, maps, PWA |
+| [docs/deployment.md](docs/deployment.md) | Vercel env vars, Supabase settings, pre-ship checks |
+| [docs/changelog.md](docs/changelog.md) | What changed and when |
 
 ## Stack
 Next.js 16 (App Router, Server Actions) · TypeScript · Tailwind CSS v4 · Supabase (Postgres, Auth, Storage, Realtime, RLS)
-· Groq (Llama 4 Scout vision) · Leaflet + OpenStreetMap · Recharts · Resend
+· Groq (`qwen/qwen3.8-27b` vision) · Leaflet + OpenStreetMap · Recharts · Resend
 
 ## Setup
 1. `npm install`
@@ -29,6 +37,8 @@ Next.js 16 (App Router, Server Actions) · TypeScript · Tailwind CSS v4 · Supa
 5. Seed demo data: `npm run seed`
 6. `npm run dev`, then open http://localhost:3000
 
+Deploying: see [docs/deployment.md](docs/deployment.md).
+
 ### Demo accounts (password = `DEMO_PASSWORD`)
 `citizen@`, `secretary@`, `campus@`, `market@`, `officer@`, `worker@` + `demo.safaisetu.in`. The login page has
 one-click buttons for each. Green Valley's invite code is `GV4K2P`.
@@ -41,8 +51,12 @@ one-click buttons for each. Green Valley's invite code is `GV4K2P`.
 | Supabase clients, session, Groq, email, storage helpers | `src/lib/` |
 | Role-based app | `src/app/app/` (`home`, `report`, `pickup`, `tickets`, `learn`, `orgs`, `org/[orgId]`, `muni`, `tasks`) |
 | QR entry / invites | `src/app/r/[qrId]`, `src/app/invite/[token]` |
+| Auth redirects | `src/proxy.ts` |
+| PWA manifest and icons | `src/app/manifest.ts`, `src/app/pwa-icon/`, `src/app/apple-icon.tsx` |
 
 **Complaint routing:** a report inside an organization goes to that org's admin (scope `internal`). Public-area reports,
 missed collections and illegal dumping go to the municipality of the nearest ward (scope `municipal`). Org admins can
 escalate. Allowed status transitions per role are enforced in Postgres (`private.ticket_before_update`), so the UI can't
 bypass them.
+
+More detail in [docs/architecture.md](docs/architecture.md).

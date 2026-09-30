@@ -33,13 +33,13 @@ export default async function TasksPage() {
     <>
       <LiveRefresh channel={`tasks-${viewer.userId}`} filter={`assigned_to=eq.${viewer.userId}`} />
       <PageHeader label="Field work" title="My tasks" description="Open a task, go to the pin, clean up, and upload an after photo as proof." />
-      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <StatCard label="To do" value={active.filter((t) => t.status === "assigned").length} />
-        <StatCard label="In progress" value={active.filter((t) => t.status === "in_progress").length} />
-        <StatCard label="Done today" value={doneToday} tone="good" />
+      <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
+        <StatCard compact label="To do" value={active.filter((t) => t.status === "assigned").length} />
+        <StatCard compact label="In progress" value={active.filter((t) => t.status === "in_progress").length} />
+        <StatCard compact label="Done today" value={doneToday} tone="good" />
       </div>
       {active.length ? (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
           <TicketList tickets={active} showWard />
           <Card className="self-start overflow-hidden">
             <CardHeader label="Route" title="Today's stops" />

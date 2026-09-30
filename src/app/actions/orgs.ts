@@ -8,7 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireViewer } from "@/lib/session";
 import { sendInviteEmail } from "@/lib/email";
 import { ORG_TYPE_META } from "@/lib/constants";
-import { siteUrl } from "@/lib/utils";
+import { publicSiteUrl } from "@/lib/site-url";
 import type { ActionState, OrgType } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
@@ -157,6 +157,7 @@ export async function inviteMembersAction(_: ActionState, formData: FormData): P
   }
 
   const supabase = await createClient();
+  const base = await publicSiteUrl();
   const { data: org } = await supabase.from("organizations").select("id, name, type").eq("id", orgId).single();
   if (!org) return { error: "Organization not found" };
 
@@ -173,7 +174,7 @@ export async function inviteMembersAction(_: ActionState, formData: FormData): P
         orgName: org.name,
         orgTypeLabel: ORG_TYPE_META[org.type as OrgType].label,
         inviterName: viewer.profile.full_name || "Your admin",
-        link: `${siteUrl()}/invite/${inv.token}`,
+        link: `${base}/invite/${inv.token}`,
       }),
     ),
   );

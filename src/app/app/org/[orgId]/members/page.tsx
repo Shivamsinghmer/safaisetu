@@ -5,7 +5,8 @@ import { Avatar, Card, CardHeader, PageHeader, Pill } from "@/components/ui";
 import { decideMemberAction, revokeInviteAction } from "@/app/actions/orgs";
 import { ORG_TYPE_META } from "@/lib/constants";
 import type { Invitation, Membership, Profile } from "@/lib/types";
-import { siteUrl, timeAgo } from "@/lib/utils";
+import { timeAgo } from "@/lib/utils";
+import { publicSiteUrl } from "@/lib/site-url";
 import { loadOrg } from "../context";
 import { CopyButton } from "../copy-button";
 import { InviteForm } from "./invite-form";
@@ -17,6 +18,7 @@ type Row = Membership & { profile: Pick<Profile, "full_name" | "email" | "phone"
 export default async function MembersPage({ params }: PageProps<"/app/org/[orgId]/members">) {
   const { orgId } = await params;
   const { supabase, org, isAdmin, viewer } = await loadOrg(orgId);
+  const base = await publicSiteUrl();
   if (!isAdmin) notFound();
   const meta = ORG_TYPE_META[org.type];
 
@@ -36,7 +38,7 @@ export default async function MembersPage({ params }: PageProps<"/app/org/[orgId
     <>
       <PageHeader label={org.name} title={meta.members} description={`${active.length} active · ${pending.length} awaiting approval · ${invites?.length ?? 0} invited`} />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-6">
           {pending.length > 0 && (
             <Card className="border-amber/40">
@@ -125,7 +127,7 @@ export default async function MembersPage({ params }: PageProps<"/app/org/[orgId
                         {i.unit_label && `${i.unit_label} · `}sent {timeAgo(i.created_at)}
                       </div>
                     </div>
-                    <CopyButton value={`${siteUrl()}/invite/${i.token}`} icon={<Link2 className="h-4 w-4" />} label="Link" />
+                    <CopyButton value={`${base}/invite/${i.token}`} icon={<Link2 className="h-4 w-4" />} label="Link" />
                     <form action={revokeInviteAction}>
                       <input type="hidden" name="invite_id" value={i.id} />
                       <input type="hidden" name="org_id" value={orgId} />

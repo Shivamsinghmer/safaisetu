@@ -100,7 +100,7 @@ export default async function OrgOverviewPage({ params, searchParams }: PageProp
             </ButtonLink>
           )}
         </div>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <section>
             <h2 className="mb-3 font-display text-lg font-bold tracking-[-0.02em]">Your reports here</h2>
             {tickets.length ? (
@@ -155,7 +155,7 @@ export default async function OrgOverviewPage({ params, searchParams }: PageProp
         <StatCard label={meta.members} value={memberCount ?? 0} caption={pendingMembers ? `${pendingMembers} awaiting approval` : `Avg resolution ${formatHours(avgHours)}`} tone={pendingMembers ? "warn" : "default"} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <section className="flex flex-col gap-6">
           {pickupsPending.length > 0 && (
             <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">

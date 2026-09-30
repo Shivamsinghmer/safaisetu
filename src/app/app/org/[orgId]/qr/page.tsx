@@ -5,7 +5,7 @@ import { Printer, QrCode, Trash2 } from "lucide-react";
 import { Card, CardHeader, EmptyState, PageHeader } from "@/components/ui";
 import { deleteQrPointAction } from "@/app/actions/orgs";
 import type { QrPoint } from "@/lib/types";
-import { siteUrl } from "@/lib/utils";
+import { publicSiteUrl } from "@/lib/site-url";
 import { loadOrg } from "../context";
 import { QrForm } from "./qr-form";
 import { PrintButton } from "./print-button";
@@ -23,9 +23,10 @@ export default async function QrPage({ params }: PageProps<"/app/org/[orgId]/qr"
     supabase.from("tickets").select("qr_point_id").eq("org_id", orgId).not("qr_point_id", "is", null),
   ]);
 
+  const base = await publicSiteUrl();
   const svgs = await Promise.all(
     points.map((p) =>
-      QRCode.toString(`${siteUrl()}/r/${p.id}`, {
+      QRCode.toString(`${base}/r/${p.id}`, {
         type: "svg",
         margin: 1,
         errorCorrectionLevel: "M",
@@ -42,7 +43,7 @@ export default async function QrPage({ params }: PageProps<"/app/org/[orgId]/qr"
         description="Stick these on bins, gates and walls. Anyone can scan to report a problem at that exact spot. No app install needed."
         actions={points.length ? <PrintButton /> : undefined}
       />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
         <Card className="self-start print:hidden">
           <CardHeader label="New" title="Add a spot" />
           <div className="p-5">
@@ -51,13 +52,22 @@ export default async function QrPage({ params }: PageProps<"/app/org/[orgId]/qr"
         </Card>
 
         {points.length ? (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {points.map((p, i) => (
               <Card key={p.id} className="flex flex-col items-center p-6 text-center break-inside-avoid">
                 <div className="label-mono">Spotted garbage? Scan to report</div>
                 <div className="mt-3 w-40" dangerouslySetInnerHTML={{ __html: svgs[i]! }} />
                 <div className="mt-3 font-display text-lg font-bold tracking-[-0.02em]">{p.label}</div>
                 <div className="text-xs text-slate">{org.name}</div>
+                {/* The exact link inside the code: lets admins test it without a phone */}
+                <a
+                  href={`${base}/r/${p.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 max-w-full truncate font-mono text-[10px] text-ash hover:text-blue print:hidden"
+                >
+                  {`${base.replace(/^https?:\/\//, "")}/r/${p.id.slice(0, 8)}…`}
+                </a>
                 <div className="mt-3 flex items-center gap-3 print:hidden">
                   <span className="font-mono text-[11px] text-ash">
                     {counts?.filter((c) => c.qr_point_id === p.id).length ?? 0} reports
@@ -65,7 +75,7 @@ export default async function QrPage({ params }: PageProps<"/app/org/[orgId]/qr"
                   <form action={deleteQrPointAction}>
                     <input type="hidden" name="qr_id" value={p.id} />
                     <input type="hidden" name="org_id" value={orgId} />
-                    <button className="cursor-pointer rounded-full p-1.5 text-ash hover:bg-coral/5 hover:text-coral" aria-label={`Delete ${p.label}`}>
+                    <button className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-ash hover:bg-coral/5 hover:text-coral" aria-label={`Delete ${p.label}`}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </form>

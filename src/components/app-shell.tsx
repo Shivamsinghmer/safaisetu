@@ -179,7 +179,7 @@ export function AppShell({
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-30 flex h-14 print:hidden items-center justify-between border-b border-bone bg-card/90 px-4 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center justify-between border-b border-bone bg-card/90 px-4 pt-[env(safe-area-inset-top,0px)] backdrop-blur print:hidden lg:hidden">
         <Link href="/app" className="flex items-center gap-2">
           <LogoMark className="h-6 w-6" />
           <span className="font-display text-base font-extrabold tracking-[-0.03em] text-onyx">SafaiSetu</span>
@@ -201,7 +201,7 @@ export function AppShell({
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 right-0 flex w-[82%] max-w-sm animate-rise flex-col bg-card">
-            <div className="flex h-14 items-center justify-between border-b border-bone px-4">
+            <div className="flex h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center justify-between border-b border-bone px-4 pt-[env(safe-area-inset-top,0px)]">
               <span className="label-mono">Menu</span>
               <button
                 onClick={() => setOpen(false)}
@@ -214,7 +214,7 @@ export function AppShell({
             <div className="flex-1 overflow-y-auto p-3">
               <NavList sections={sections} onNavigate={() => setOpen(false)} />
             </div>
-            <div className="p-3">
+            <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
               <UserBlock name={name} roleLabel={roleLabel} />
             </div>
           </div>
@@ -222,7 +222,9 @@ export function AppShell({
       )}
 
       <main className="lg:pl-[248px] print:!pl-0">
-        <div className="mx-auto w-full max-w-[1200px] px-4 pt-6 pb-28 sm:px-6 lg:px-10 lg:pt-10 lg:pb-16">{children}</div>
+        <div className="mx-auto w-full max-w-[1200px] px-4 pt-6 pb-[calc(var(--tabbar-h)+2rem)] sm:px-6 lg:px-10 lg:pt-10 lg:pb-16">
+          {children}
+        </div>
       </main>
 
       {/* Mobile bottom tabs */}
