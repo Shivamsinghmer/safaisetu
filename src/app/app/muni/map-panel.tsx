@@ -21,7 +21,7 @@ export function MapPanel({ tickets, orgs }: { tickets: MapTicket[]; orgs: MapOrg
               aria-pressed={mode === m}
               className={cn(
                 "h-7 cursor-pointer rounded-full px-3 text-[12px] font-bold",
-                mode === m ? "bg-ink text-white" : "text-carbon hover:bg-black/4",
+                mode === m ? "bg-primary text-primary-foreground" : "text-carbon hover:bg-black/4",
               )}
             >
               {m === "heat" ? "Hotspots" : "Complaints"}

@@ -1,20 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans, Sometype_Mono } from "next/font/google";
+import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { RouteTransitions } from "@/components/route-transitions";
+import { InlineScript } from "@/components/inline-script";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
 });
 
-const sometype = Sometype_Mono({
-  variable: "--font-sometype",
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
   weight: ["400", "500"],
 });
@@ -27,15 +23,30 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f1a" },
+  ],
   width: "device-width",
   initialScale: 1,
 };
 
+const THEME_SCRIPT = `try{var t=localStorage.getItem("safaisetu-theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${jakarta.variable} ${inter.variable} ${sometype.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+    <html
+      lang="en"
+      className={`${bricolage.variable} ${jetbrains.variable} h-full`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Apply the saved (or system) theme before first paint to avoid a flash */}
+        <InlineScript html={THEME_SCRIPT} />
+      </head>
+      <body className="min-h-full">
+        <RouteTransitions>{children}</RouteTransitions>
+      </body>
     </html>
   );
 }

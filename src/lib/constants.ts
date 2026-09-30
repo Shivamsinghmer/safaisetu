@@ -31,10 +31,10 @@ export function categoryLabel(value: string) {
 export const STATUS_META: Record<TicketStatus, { label: string; className: string; dot: string }> = {
   submitted: { label: "Submitted", className: "bg-mercury text-carbon", dot: "bg-fog" },
   assigned: { label: "Assigned", className: "bg-violet/10 text-violet", dot: "bg-violet" },
-  in_progress: { label: "In progress", className: "bg-blue text-white", dot: "bg-blue" },
-  resolved: { label: "Resolved", className: "bg-mint text-onyx", dot: "bg-mint" },
+  in_progress: { label: "In progress", className: "bg-blue text-snow", dot: "bg-blue" },
+  resolved: { label: "Resolved", className: "bg-mint text-night", dot: "bg-mint" },
   closed: { label: "Closed", className: "bg-white text-emerald ring-1 ring-inset ring-emerald", dot: "bg-emerald" },
-  reopened: { label: "Reopened", className: "bg-pink text-white", dot: "bg-pink" },
+  reopened: { label: "Reopened", className: "bg-pink text-snow", dot: "bg-pink" },
   rejected: { label: "Rejected", className: "bg-mist text-ash", dot: "bg-cloud" },
 };
 
@@ -81,7 +81,7 @@ export const WASTE_STREAMS = {
   wet: { label: "Wet waste", bin: "Green bin", swatch: "bg-emerald" },
   dry: { label: "Dry waste", bin: "Blue bin", swatch: "bg-blue" },
   hazardous: { label: "Domestic hazardous", bin: "Red bin", swatch: "bg-coral" },
-  e_waste: { label: "E-waste", bin: "Black bin / e-waste drop point", swatch: "bg-ink" },
+  e_waste: { label: "E-waste", bin: "Black bin / e-waste drop point", swatch: "bg-night ring-1 ring-cloud" },
 } as const;
 
 export type WasteStream = keyof typeof WASTE_STREAMS;

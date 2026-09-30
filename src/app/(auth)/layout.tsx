@@ -1,16 +1,17 @@
 import { Logo } from "@/components/logo";
 import { CheckCircle2 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(0,560px)]">
-      <aside className="relative hidden overflow-hidden bg-[image:var(--gradient-dark-fade)] p-12 text-white lg:flex lg:flex-col lg:justify-between">
-        <Logo className="[&_span]:text-white" />
+      <aside className="relative hidden overflow-hidden bg-[image:var(--gradient-dark-fade)] p-12 text-snow lg:flex lg:flex-col lg:justify-between">
+        <Logo className="[&_span]:text-snow" />
         <div className="max-w-md">
-          <h2 className="font-display text-heading leading-[1.1] font-bold text-white">
+          <h2 className="font-display text-heading leading-[1.1] font-bold text-snow">
             Every complaint, <span className="text-gradient-primary">tracked to clean.</span>
           </h2>
-          <ul className="mt-8 space-y-3 text-[15px] text-fog">
+          <ul className="mt-8 space-y-3 text-[15px] text-haze">
             {[
               "Report in 20 seconds with a photo. AI fills in the rest.",
               "Your society, campus or city in one place.",
@@ -26,8 +27,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <p className="label-mono !text-slate">Built for Swachh cities · 2026</p>
       </aside>
       <main className="flex flex-col px-4 py-8 sm:px-10">
-        <div className="lg:hidden">
-          <Logo />
+        <div className="flex items-center justify-between lg:justify-end">
+          <Logo className="lg:hidden" />
+          <ThemeToggle />
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">{children}</div>
       </main>

@@ -69,8 +69,8 @@ export default function LearnPage() {
         <ItemSearch />
       </section>
 
-      <section className="mt-10 rounded-[20px] bg-[image:var(--gradient-dark-fade)] p-8 text-white sm:p-10">
-        <div className="label-mono !text-fog">Why it matters</div>
+      <section className="mt-10 rounded-[20px] bg-[image:var(--gradient-dark-fade)] p-8 text-snow sm:p-10">
+        <div className="label-mono !text-haze">Why it matters</div>
         <div className="mt-4 grid gap-6 sm:grid-cols-3">
           {[
             ["50%+", "of Indian city waste is wet, organic waste that can be composted"],
@@ -78,8 +78,8 @@ export default function LearnPage() {
             ["1 photo", "is all it takes to report a problem to the right people"],
           ].map(([n, t]) => (
             <div key={n}>
-              <div className="font-display text-[40px] leading-none font-bold tracking-[-0.04em] text-white">{n}</div>
-              <p className="mt-2 text-sm text-fog">{t}</p>
+              <div className="font-display text-[40px] leading-none font-bold tracking-[-0.04em] text-snow">{n}</div>
+              <p className="mt-2 text-sm text-haze">{t}</p>
             </div>
           ))}
         </div>

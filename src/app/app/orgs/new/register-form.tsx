@@ -46,7 +46,7 @@ export function RegisterOrgForm({ userId }: { userId: string }) {
                 aria-pressed={type === t}
                 className={cn(
                   "h-9 cursor-pointer rounded-full border px-4 text-[13px] font-bold transition-colors",
-                  type === t ? "border-ink bg-ink text-white" : "border-bone bg-white text-carbon hover:bg-mist",
+                  type === t ? "border-primary bg-primary text-primary-foreground" : "border-bone bg-white text-carbon hover:bg-mist",
                 )}
               >
                 {ORG_TYPE_META[t].label}

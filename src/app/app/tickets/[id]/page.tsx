@@ -277,7 +277,7 @@ function Photo({ src, label, tone }: { src: string; label: string; tone?: "good"
       <figcaption
         className={cn(
           "absolute top-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-          tone === "good" ? "bg-mint text-onyx" : "bg-white/95 text-ink",
+          tone === "good" ? "bg-mint text-night" : "bg-white/95 text-ink",
         )}
       >
         {label}

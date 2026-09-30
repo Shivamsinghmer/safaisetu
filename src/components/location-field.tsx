@@ -30,26 +30,41 @@ export function LocationField({
   locked,
   autoLocate = true,
   addressName = "address",
+  onAddressChange,
 }: {
   initial?: { lat: number; lng: number; address?: string | null };
   locked?: boolean;
   autoLocate?: boolean;
   addressName?: string;
+  /** Called whenever the address text changes (reverse geocode or typing) */
+  onAddressChange?: (address: string) => void;
 }) {
   const [pos, setPos] = useState<[number, number]>(initial ? [initial.lat, initial.lng] : DEFAULT);
-  const [address, setAddress] = useState(initial?.address ?? "");
+  const [address, setAddressState] = useState(initial?.address ?? "");
   const [note, setNote] = useState<string | null>(null);
   const addressTouched = useRef(Boolean(initial?.address));
   const geoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onAddressChangeRef = useRef(onAddressChange);
+  useEffect(() => {
+    onAddressChangeRef.current = onAddressChange;
+  }, [onAddressChange]);
 
-  const move = useCallback((lat: number, lng: number) => {
-    setPos([lat, lng]);
-    if (geoTimer.current) clearTimeout(geoTimer.current);
-    geoTimer.current = setTimeout(async () => {
-      const a = await reverseGeocode(lat, lng);
-      if (a && !addressTouched.current) setAddress(a);
-    }, 500);
+  const setAddress = useCallback((a: string) => {
+    setAddressState(a);
+    onAddressChangeRef.current?.(a);
   }, []);
+
+  const move = useCallback(
+    (lat: number, lng: number) => {
+      setPos([lat, lng]);
+      if (geoTimer.current) clearTimeout(geoTimer.current);
+      geoTimer.current = setTimeout(async () => {
+        const a = await reverseGeocode(lat, lng);
+        if (a && !addressTouched.current) setAddress(a);
+      }, 500);
+    },
+    [setAddress],
+  );
 
   const autoOnMount = !initial && autoLocate && !locked;
   const [locating, setLocating] = useState(autoOnMount);

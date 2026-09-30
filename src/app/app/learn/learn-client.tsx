@@ -62,7 +62,7 @@ export function BinClassifier() {
               onClick={() => inputRef.current?.click()}
               className="flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-3 text-slate md:h-full"
             >
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Camera className="h-6 w-6" />
               </span>
               <span className="font-display font-bold text-ink">Snap an item</span>
@@ -70,7 +70,7 @@ export function BinClassifier() {
             </button>
           )}
           {busy && (
-            <div className="absolute inset-0 flex items-center justify-center bg-onyx/35">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
               <span className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-semibold">
                 <Loader2 className="h-4 w-4 animate-spin" /> Identifying…
               </span>
@@ -101,7 +101,7 @@ export function BinClassifier() {
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <Pill className="bg-mist text-carbon">{stream.label}</Pill>
                 {result.recyclable && (
-                  <Pill className="bg-mint text-onyx">
+                  <Pill className="bg-mint text-night">
                     <Recycle className="h-3 w-3" /> Recyclable
                   </Pill>
                 )}
@@ -126,7 +126,7 @@ export function BinClassifier() {
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="mt-auto inline-flex h-10 w-fit cursor-pointer items-center gap-2 self-start rounded-full bg-ink px-5 pt-0 font-display text-sm font-bold text-white hover:bg-carbon disabled:opacity-50 max-md:mt-6"
+            className="mt-auto inline-flex h-10 w-fit cursor-pointer items-center gap-2 self-start rounded-full bg-primary px-5 pt-0 font-display text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 max-md:mt-6"
           >
             <Camera className="h-4 w-4" /> {result || error ? "Try another item" : "Open camera"}
           </button>

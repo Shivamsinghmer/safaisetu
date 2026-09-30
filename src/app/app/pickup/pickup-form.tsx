@@ -40,7 +40,7 @@ export function PickupForm({ userId, orgs }: { userId: string; orgs: ReportOrg[]
                 aria-pressed={type === t.value}
                 className={cn(
                   "cursor-pointer rounded-xl border p-4 text-left transition-colors",
-                  type === t.value ? "border-ink bg-ink text-white" : "border-bone bg-white hover:border-cloud hover:bg-mist",
+                  type === t.value ? "border-primary bg-primary text-primary-foreground" : "border-bone bg-white hover:border-cloud hover:bg-mist",
                 )}
               >
                 <div className="font-display text-[15px] font-bold">{t.label}</div>

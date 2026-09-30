@@ -14,12 +14,12 @@ const buttonBase =
   "disabled:pointer-events-none disabled:opacity-45 active:scale-[0.98] cursor-pointer";
 
 const buttonVariants = {
-  primary: "bg-ink text-white hover:bg-carbon",
+  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
   secondary: "bg-white text-ink border border-bone hover:border-cloud hover:bg-mist",
   "outline-blue": "bg-white text-blue border border-blue hover:bg-blue/5",
   ghost: "text-carbon hover:bg-black/4",
   danger: "bg-white text-coral border border-coral/40 hover:bg-coral/5",
-  success: "bg-emerald text-white hover:bg-emerald/90",
+  success: "bg-emerald text-snow hover:bg-emerald/90",
 };
 
 const buttonSizes = {
@@ -220,7 +220,7 @@ export function Avatar({ name, className }: { name: string | null | undefined; c
 /* Form controls                                                        */
 /* ------------------------------------------------------------------ */
 const control =
-  "w-full rounded-[9px] border border-cloud bg-white px-3 text-[15px] text-ink placeholder:text-fog " +
+  "w-full rounded-md border border-input bg-white px-3 text-[15px] text-ink placeholder:text-fog " +
   "transition-[border-color,box-shadow] duration-150 focus:border-blue focus:outline-none focus:ring-3 focus:ring-blue/15 " +
   "disabled:bg-mist disabled:text-ash";
 
@@ -264,13 +264,13 @@ export function FormMessage({ state }: { state: { error?: string; message?: stri
   if (!state) return null;
   if (state.error)
     return (
-      <p role="alert" className="rounded-[9px] border border-coral/30 bg-coral/5 px-3 py-2 text-sm text-coral">
+      <p role="alert" className="rounded-md border border-coral/30 bg-coral/5 px-3 py-2 text-sm text-coral">
         {state.error}
       </p>
     );
   if (state.message)
     return (
-      <p role="status" className="rounded-[9px] border border-emerald/30 bg-emerald/5 px-3 py-2 text-sm text-emerald">
+      <p role="status" className="rounded-md border border-emerald/30 bg-emerald/5 px-3 py-2 text-sm text-emerald">
         {state.message}
       </p>
     );

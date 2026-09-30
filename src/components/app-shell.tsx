@@ -28,6 +28,7 @@ import { LogoMark } from "@/components/logo";
 import { Avatar } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/actions/auth";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const ICONS = {
   home: Home,
@@ -97,16 +98,16 @@ function NavList({ sections, onNavigate }: { sections: NavSection[]; onNavigate?
                     aria-current={on ? "page" : undefined}
                     className={cn(
                       "flex h-9 items-center gap-2.5 rounded-full px-3 text-sm font-medium transition-colors duration-150",
-                      on ? "bg-ink text-white" : "text-carbon hover:bg-black/4",
+                      on ? "bg-primary text-primary-foreground" : "text-carbon hover:bg-black/4",
                     )}
                   >
-                    <Icon className={cn("h-4 w-4 shrink-0", on ? "text-white" : "text-slate")} aria-hidden />
+                    <Icon className={cn("h-4 w-4 shrink-0", on ? "text-primary-foreground" : "text-slate")} aria-hidden />
                     <span className="truncate">{item.label}</span>
                     {item.badge ? (
                       <span
                         className={cn(
                           "ml-auto rounded-full px-1.5 font-mono text-[10px] leading-4 font-medium tabular-nums",
-                          on ? "bg-white/20 text-white" : "bg-coral text-white",
+                          on ? "bg-primary-foreground/20 text-primary-foreground" : "bg-coral text-snow",
                         )}
                       >
                         {item.badge}
@@ -131,6 +132,7 @@ function UserBlock({ name, roleLabel }: { name: string; roleLabel: string }) {
         <div className="truncate text-sm font-semibold text-ink">{name}</div>
         <div className="truncate text-xs text-ash">{roleLabel}</div>
       </div>
+      <ThemeToggle />
       <form action={signOutAction}>
         <button
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-slate hover:bg-black/4 hover:text-ink"
@@ -182,19 +184,22 @@ export function AppShell({
           <LogoMark className="h-6 w-6" />
           <span className="font-display text-base font-extrabold tracking-[-0.03em] text-onyx">SafaiSetu</span>
         </Link>
-        <button
-          onClick={() => setOpen(true)}
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full hover:bg-black/4"
-          aria-label="Open menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <button
+            onClick={() => setOpen(true)}
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full hover:bg-black/4"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
       </header>
 
       {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-onyx/30" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm animate-rise flex-col bg-white">
             <div className="flex h-14 items-center justify-between border-b border-bone px-4">
               <span className="label-mono">Menu</span>
@@ -239,7 +244,7 @@ export function AppShell({
                     )}
                   >
                     {primary ? (
-                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-white">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <Icon className="h-5 w-5" aria-hidden />
                       </span>
                     ) : (

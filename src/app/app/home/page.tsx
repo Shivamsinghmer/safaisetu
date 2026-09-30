@@ -144,14 +144,14 @@ function QuickAction({
       href={href}
       className={
         primary
-          ? "group flex flex-col gap-4 rounded-xl bg-ink p-5 text-white transition-colors hover:bg-carbon"
+          ? "group flex flex-col gap-4 rounded-xl bg-primary p-5 text-primary-foreground transition-colors hover:bg-primary/90"
           : "group flex flex-col gap-4 rounded-xl border border-bone bg-white p-5 transition-colors hover:border-cloud"
       }
     >
       <span
         className={
           primary
-            ? "flex h-10 w-10 items-center justify-center rounded-full bg-white/10"
+            ? "flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10"
             : "flex h-10 w-10 items-center justify-center rounded-full bg-mist text-ink"
         }
       >
@@ -162,7 +162,7 @@ function QuickAction({
           {title}
           <ArrowRight className="h-4 w-4 opacity-0 transition-all duration-150 group-hover:translate-x-0.5 group-hover:opacity-100" />
         </div>
-        <div className={primary ? "mt-0.5 text-[13px] text-fog" : "mt-0.5 text-[13px] text-slate"}>{text}</div>
+        <div className={primary ? "mt-0.5 text-[13px] text-primary-foreground/70" : "mt-0.5 text-[13px] text-slate"}>{text}</div>
       </div>
     </Link>
   );

@@ -7,7 +7,7 @@ const GRID = "#eeeeee";
 
 function TooltipBox({ title, rows }: { title: string; rows: [string, string | number][] }) {
   return (
-    <div className="rounded-[9px] border border-bone bg-white px-3 py-2 text-xs shadow-float">
+    <div className="rounded-md border border-bone bg-white px-3 py-2 text-xs shadow-float">
       <div className="mb-1 font-semibold text-ink">{title}</div>
       {rows.map(([k, v]) => (
         <div key={k} className="flex justify-between gap-4 text-slate">
@@ -22,7 +22,7 @@ function TooltipBox({ title, rows }: { title: string; rows: [string, string | nu
 /** Daily complaint volume: new reports as bars, resolved shown in the tooltip only. */
 export function DailyVolumeChart({ data }: { data: { day: string; label: string; reported: number; resolved: number }[] }) {
   return (
-    <div className="h-[220px] w-full">
+    <div className="h-[220px] w-full text-ink">
       <ResponsiveContainer>
         <BarChart data={data} margin={{ top: 8, right: 4, left: -24, bottom: 0 }} barCategoryGap={3}>
           <CartesianGrid vertical={false} stroke={GRID} />
@@ -49,7 +49,7 @@ export function DailyVolumeChart({ data }: { data: { day: string; label: string;
               ) : null
             }
           />
-          <Bar dataKey="reported" fill="#202020" radius={[4, 4, 0, 0]} maxBarSize={22} />
+          <Bar dataKey="reported" fill="currentColor" radius={[4, 4, 0, 0]} maxBarSize={22} />
         </BarChart>
       </ResponsiveContainer>
     </div>

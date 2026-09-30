@@ -24,6 +24,7 @@ export function PhotoCapture({
   onCaptured,
   analyzing,
   className,
+  aspect = "aspect-[4/3]",
 }: {
   userId: string;
   bucket?: string;
@@ -31,6 +32,8 @@ export function PhotoCapture({
   onCaptured: (photo: CapturedPhoto) => void;
   analyzing?: boolean;
   className?: string;
+  /** Tailwind aspect class for the dropzone and preview */
+  aspect?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -84,9 +87,9 @@ export function PhotoCapture({
       {preview ? (
         <div className="relative overflow-hidden rounded-2xl border border-bone bg-mist">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt="Selected photo" className="aspect-[4/3] w-full object-cover" />
+          <img src={preview} alt="Selected photo" className={cn(aspect, "w-full object-cover")} />
           {(busy || analyzing) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-onyx/35 backdrop-blur-[2px]">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
               <span className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-semibold text-ink">
                 {busy ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -112,11 +115,12 @@ export function PhotoCapture({
           onClick={() => inputRef.current?.click()}
           disabled={busy}
           className={cn(
-            "flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-cloud bg-mist",
+            aspect,
+            "flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-cloud bg-mist",
             "text-slate transition-colors hover:border-fog hover:bg-plaster/60",
           )}
         >
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
             {busy ? <Loader2 className="h-6 w-6 animate-spin" /> : <Camera className="h-6 w-6" />}
           </span>
           <span className="font-display text-[15px] font-bold text-ink">{label}</span>

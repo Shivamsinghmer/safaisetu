@@ -54,7 +54,7 @@ export default async function MembersPage({ params }: PageProps<"/app/org/[orgId
                     <form action={decideMemberAction} className="flex gap-2">
                       <input type="hidden" name="membership_id" value={m.id} />
                       <input type="hidden" name="org_id" value={orgId} />
-                      <button name="decision" value="approve" className="h-8 cursor-pointer rounded-full bg-ink px-3.5 text-[13px] font-bold text-white hover:bg-carbon">
+                      <button name="decision" value="approve" className="h-8 cursor-pointer rounded-full bg-primary px-3.5 text-[13px] font-bold text-primary-foreground hover:bg-primary/90">
                         Approve
                       </button>
                       <button name="decision" value="remove" className="h-8 cursor-pointer rounded-full border border-bone px-3.5 text-[13px] font-bold text-carbon hover:bg-mist">

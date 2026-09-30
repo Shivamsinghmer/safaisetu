@@ -95,7 +95,7 @@ export default async function MuniOrgsPage({ searchParams }: PageProps<"/app/mun
                     <input
                       name="reason"
                       placeholder="Reason (if rejecting)"
-                      className="h-9 min-w-0 flex-1 rounded-[9px] border border-cloud px-3 text-sm focus:border-blue focus:outline-none"
+                      className="h-9 min-w-0 flex-1 rounded-md border border-cloud px-3 text-sm focus:border-blue focus:outline-none"
                     />
                     <SubmitButton name="decision" value="reject" variant="ghost" size="sm">
                       Reject
