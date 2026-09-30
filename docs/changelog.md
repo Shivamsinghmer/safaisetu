@@ -3,7 +3,7 @@
 Newest first. Add an entry under **Unreleased** with every change, and move it under a dated heading when it's pushed.
 
 ## Unreleased
-_Nothing yet._
+- Landing "Live intake" bucket: the box body's outline now shows in light mode too (a hairline `stroke-cloud`), matching the edges the white inner glow draws in dark mode.
 
 ## 2026-09-30 — Mobile, theming, PWA, auth redesign and QR fixes
 - Fixed sideways overflow on phones. Grids that only had breakpoint columns now start with `grid-cols-1` (32 grids,
