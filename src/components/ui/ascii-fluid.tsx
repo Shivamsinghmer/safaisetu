@@ -31,6 +31,10 @@ export type AsciiFluidOptions = {
    * (`html.dark` class).
    */
   theme?: AsciiFluidTheme
+  /** Halo strength around the trail, 0–1. Default `0.22` */
+  glow?: number
+  /** Halo / bloom color (hex). Default = ink color. */
+  glowColor?: string
 }
 
 export type AsciiFluidInstance = {
@@ -179,11 +183,27 @@ uniform vec2 u_cell;
 uniform float u_charCount;
 uniform vec3 u_ink;
 uniform vec3 u_paper;
+uniform vec3 u_glowColor;
+uniform float u_glow;
+uniform float u_additive;
 uniform float u_time;
 uniform float u_animate;
 
 float hash21(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float ring(vec2 uv, vec2 r) {
+  return (
+    texture2D(u_dye, uv + vec2( r.x, 0.0)).x +
+    texture2D(u_dye, uv - vec2( r.x, 0.0)).x +
+    texture2D(u_dye, uv + vec2(0.0,  r.y)).x +
+    texture2D(u_dye, uv - vec2(0.0,  r.y)).x +
+    texture2D(u_dye, uv + r * 0.7071).x +
+    texture2D(u_dye, uv - r * 0.7071).x +
+    texture2D(u_dye, uv + vec2(r.x, -r.y) * 0.7071).x +
+    texture2D(u_dye, uv - vec2(r.x, -r.y) * 0.7071).x
+  ) * 0.125;
 }
 
 void main() {
@@ -193,16 +213,13 @@ void main() {
 
   float dens = clamp(texture2D(u_dye, cellUv).x, 0.0, 1.0);
 
-  // Soft neighborhood sample for a low-res glow halo under the glyphs
+  // Wide two-ring neighborhood sample: a soft bloom that extends past the glyphs.
+  // Sampled at pixel UV (not cell UV) so the halo is smooth, not blocky.
   vec2 texel = u_cell / u_resolution;
-  float glow =
-    dens * 0.40 +
-    texture2D(u_dye, cellUv + vec2( texel.x, 0.0)).x * 0.15 +
-    texture2D(u_dye, cellUv - vec2( texel.x, 0.0)).x * 0.15 +
-    texture2D(u_dye, cellUv + vec2(0.0,  texel.y)).x * 0.15 +
-    texture2D(u_dye, cellUv - vec2(0.0,  texel.y)).x * 0.15;
-  glow = clamp(glow, 0.0, 1.0);
-  glow = pow(glow, 1.35);
+  float near = ring(v_uv, texel * 1.5);
+  float far = ring(v_uv, texel * 4.0);
+  float glow = clamp(texture2D(u_dye, v_uv).x * 0.35 + near * 0.4 + far * 0.45, 0.0, 1.0);
+  glow = pow(glow, 1.1);
 
   float lit = dens;
   if (u_animate > 0.5) {
@@ -217,11 +234,14 @@ void main() {
 
   float alpha = glyph * smoothstep(0.02, 0.12, dens);
 
-  // Paper → soft ink wash → sharp ASCII on top
-  float wash = glow * 0.22;
-  vec3 col = mix(u_paper, u_ink, wash);
-  col = mix(col, u_ink, clamp(alpha, 0.0, 1.0));
-  gl_FragColor = vec4(col, 1.0);
+  // Paper → colored glow wash → sharp ASCII on top → additive bloom (dark themes)
+  float halo = smoothstep(0.0, 0.85, glow) * u_glow;
+  vec3 col = mix(u_paper, u_glowColor, halo);
+  vec3 glyphCol = mix(u_ink, u_glowColor, 0.35 * u_glow);
+  col = mix(col, glyphCol, clamp(alpha, 0.0, 1.0));
+  // Light emission: brightens trail cores and glyphs on dark paper
+  col += u_glowColor * (glow * glow * 0.9 + alpha * dens * 0.35) * u_glow * u_additive;
+  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
 `
 
@@ -606,6 +626,8 @@ export function createAsciiFluid(
     const paper = hexToRgb(
       p.backgroundColor ?? (dark ? DARK.paper : LIGHT.paper)
     )
+    const glowColor = p.glowColor ? hexToRgb(p.glowColor) : ink
+    const glowStrength = Math.max(0, Math.min(1, p.glow ?? 0.22))
     const texel = [1 / SIM, 1 / SIM] as const
     const aspect = canvas.width / Math.max(canvas.height, 1)
     const brushR = 0.00012 + Math.max(0.05, Math.min(1, p.brush)) * 0.0011
@@ -807,6 +829,15 @@ export function createAsciiFluid(
       paper[1],
       paper[2]
     )
+    gl.uniform3f(
+      gl.getUniformLocation(display.program, "u_glowColor"),
+      glowColor[0],
+      glowColor[1],
+      glowColor[2]
+    )
+    gl.uniform1f(gl.getUniformLocation(display.program, "u_glow"), glowStrength)
+    // Additive bloom only makes sense on dark paper (it would wash out light paper)
+    gl.uniform1f(gl.getUniformLocation(display.program, "u_additive"), dark ? 1 : 0)
     gl.uniform1f(gl.getUniformLocation(display.program, "u_time"), time)
     gl.uniform1f(
       gl.getUniformLocation(display.program, "u_animate"),
@@ -881,6 +912,8 @@ export function AsciiFluid({
   animate = true,
   interactive = true,
   theme = "auto",
+  glow = 0.22,
+  glowColor,
 }: AsciiFluidProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const instanceRef = useRef<AsciiFluidInstance | null>(null)
@@ -899,6 +932,8 @@ export function AsciiFluid({
       animate,
       interactive,
       theme,
+      glow,
+      glowColor,
     })
     return () => {
       instanceRef.current?.destroy()
@@ -920,6 +955,8 @@ export function AsciiFluid({
       animate,
       interactive,
       theme,
+      glow,
+      glowColor,
     })
   }, [
     charset,
@@ -932,6 +969,8 @@ export function AsciiFluid({
     animate,
     interactive,
     theme,
+    glow,
+    glowColor,
   ])
 
   return (

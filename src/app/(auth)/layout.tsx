@@ -24,7 +24,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             ))}
           </ul>
         </div>
-        <p className="label-mono !text-slate">Built for Swachh cities · 2026</p>
+        <p className="label-mono !text-haze">Built for Swachh cities · 2026</p>
       </aside>
       <main className="flex flex-col px-4 py-8 sm:px-10">
         <div className="flex items-center justify-between lg:justify-end">
