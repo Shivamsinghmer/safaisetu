@@ -117,7 +117,7 @@ export default async function MuniDashboard() {
           <div className="label-mono mb-2">
             {muni.name} · last {DAYS} days
           </div>
-          <h1 className="font-display text-[30px] leading-tight font-bold tracking-[-0.04em] sm:text-heading">City overview</h1>
+          <h1 className="font-display text-[26px] leading-tight font-bold tracking-[-0.04em] sm:text-[30px] md:text-heading">City overview</h1>
           <p className="mt-1 text-[15px] text-slate">
             {wards.length} wards · {orgTypeCounts.join(" · ")}
           </p>

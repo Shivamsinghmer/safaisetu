@@ -17,7 +17,7 @@ export function TicketList({
   className?: string;
 }) {
   return (
-    <ul className={cn("divide-y divide-bone overflow-hidden rounded-xl border border-bone bg-white", className)}>
+    <ul className={cn("divide-y divide-bone overflow-hidden rounded-xl border border-bone bg-card", className)}>
       {tickets.map((t) => {
         const overdue = isOverdue(t.sla_due_at, t.status);
         return (

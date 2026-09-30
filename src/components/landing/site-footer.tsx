@@ -62,7 +62,7 @@ export function SiteFooter() {
 
   return (
     <footer className="relative isolate overflow-hidden border-t border-border bg-card">
-      <div className="mx-auto w-full max-w-[1240px] px-4 pt-16 sm:px-6">
+      <div className="mx-auto w-full max-w-[1240px] px-4 pt-10 sm:px-6 sm:pt-16">
         <div className="grid gap-12 lg:grid-cols-12">
           {/* Brand */}
           <div className="lg:col-span-5">
@@ -88,7 +88,7 @@ export function SiteFooter() {
           </div>
 
           {/* Link columns */}
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-7">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-6 sm:grid-cols-3 sm:gap-8 lg:col-span-7">
             {COLUMNS.map((col) => (
               <div key={col.title}>
                 <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
@@ -115,13 +115,13 @@ export function SiteFooter() {
         </div>
 
         {/* Bin legend: segregate at source */}
-        <div className="mt-14 grid grid-cols-2 gap-3 rounded-3xl bg-muted p-3 lg:grid-cols-[1.1fr_repeat(4,minmax(0,1fr))]">
-          <div className="col-span-2 flex flex-col justify-between gap-4 p-3 lg:col-span-1">
+        <div className="mt-8 grid grid-cols-1 gap-2 rounded-2xl bg-muted p-2 sm:mt-14 sm:grid-cols-2 sm:gap-3 sm:rounded-3xl sm:p-3 lg:grid-cols-[1.1fr_repeat(4,minmax(0,1fr))]">
+          <div className="col-span-1 flex flex-col justify-between gap-3 p-3 sm:col-span-2 sm:gap-4 lg:col-span-1">
             <div>
               <div className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
                 Segregate at source
               </div>
-              <p className="mt-2 text-[17px] leading-snug font-semibold tracking-[-0.02em] text-foreground">
+              <p className="mt-2 text-[15px] leading-snug font-semibold tracking-[-0.02em] text-foreground sm:text-[17px]">
                 Four bins, sorted at home, make collection work.
               </p>
             </div>
@@ -140,7 +140,7 @@ export function SiteFooter() {
             return (
               <div
                 key={key}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-card p-4 transition-transform duration-300 hover:-translate-y-0.5"
+                className="group relative overflow-hidden rounded-xl border border-border bg-card p-3 transition-transform duration-300 hover:-translate-y-0.5 sm:rounded-2xl sm:p-4"
               >
                 <div className="flex items-center justify-between">
                   <BinGlyph className={tone.icon} />
@@ -148,7 +148,7 @@ export function SiteFooter() {
                     {s.bin.split(" / ")[0]}
                   </span>
                 </div>
-                <div className="mt-4 text-[15px] font-semibold tracking-[-0.01em] text-foreground">{s.label}</div>
+                <div className="mt-3 text-[14px] font-semibold tracking-[-0.01em] text-foreground sm:mt-4 sm:text-[15px]">{s.label}</div>
                 <div className="mt-1 text-[12.5px] leading-snug text-muted-foreground">
                   {STREAM_GUIDE[key].examples.slice(0, 2).join(", ")}
                 </div>

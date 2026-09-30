@@ -117,7 +117,7 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
               </Pill>
             )}
           </div>
-          <h1 className="mt-2 font-display text-[28px] leading-tight font-bold tracking-[-0.035em] sm:text-heading-sm">
+          <h1 className="mt-2 font-display text-[24px] leading-tight font-bold tracking-[-0.035em] sm:text-[28px] md:text-heading-sm">
             {categoryLabel(ticket.category)}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate">
@@ -182,7 +182,7 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
                 return (
                   <li key={e.id} className="relative flex gap-4 pb-6 last:pb-0">
                     {!last && <span className="absolute top-4 left-[7px] h-full w-px bg-bone" aria-hidden />}
-                    <span className={cn("relative mt-1 h-[15px] w-[15px] shrink-0 rounded-full ring-4 ring-white", meta.dot)} />
+                    <span className={cn("relative mt-1 h-[15px] w-[15px] shrink-0 rounded-full ring-4 ring-card", meta.dot)} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2">
                         <span className="font-semibold text-ink">

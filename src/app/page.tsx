@@ -26,7 +26,7 @@ import BentoCard from "@/components/bento-card";
 import { getViewer } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
-const SCREEN = "flex min-h-[calc(100svh-4rem)] snap-start flex-col justify-center";
+const SCREEN = "flex min-h-[auto] snap-start flex-col justify-center sm:min-h-[calc(100svh-4rem)]";
 
 export default async function Landing() {
   const viewer = await getViewer();
@@ -78,7 +78,7 @@ export default async function Landing() {
             title="One bin for every complaint in the city."
             text="Reports from homes, hostels, markets and roads land in one place, already sorted by type, severity and ward."
           />
-          <div className="grid gap-4 lg:grid-cols-6 lg:grid-rows-2">
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-6 lg:grid-rows-2">
             <Tile className="lg:col-span-4 lg:row-span-2" pad={false}>
               <div className="flex h-full flex-col">
                 {/* Above the bucket layer: falling chips pass behind the header, never over it */}
@@ -115,7 +115,7 @@ export default async function Landing() {
             title="Routed, assigned and proven clean."
             text="Every organization answers for its own premises. The municipality sees everything, assigns field workers and watches the clock."
           />
-          <div className="grid gap-4 lg:grid-cols-6 lg:grid-rows-2">
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-6 lg:grid-rows-2">
             <Tile className="lg:col-span-2" icon={<MapPin className="h-5 w-5" />}>
               <TileLabel>Route</TileLabel>
               <TileTitle>Society first, city when needed</TileTitle>
@@ -152,7 +152,7 @@ export default async function Landing() {
             title="Built for every place that makes waste."
             text="One account works everywhere. Join your society with a code, your campus with your college email, and report anything on the street."
           />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { i: Building2, t: "Societies", d: "Secretaries invite residents, handle internal issues and batch bulk pickups." },
               { i: GraduationCap, t: "Colleges", d: "Students join automatically with their college email. Hostels become units." },
@@ -166,18 +166,18 @@ export default async function Landing() {
             ))}
           </div>
 
-          <div className="mt-6 flex flex-col items-start justify-between gap-6 rounded-3xl bg-primary p-8 text-primary-foreground sm:flex-row sm:items-center short:mt-4 short:p-6">
+          <div className="mt-6 flex flex-col items-start justify-between gap-5 rounded-2xl bg-primary p-5 text-primary-foreground sm:flex-row sm:items-center sm:gap-6 sm:rounded-3xl sm:p-8 short:mt-4 short:p-6">
             <div>
               <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.08em] uppercase opacity-70">
                 <Sparkles className="h-3.5 w-3.5" /> Free for residents
               </div>
-              <div className="mt-2 text-[26px] leading-tight font-medium tracking-[-0.03em]">
+              <div className="mt-2 text-[22px] leading-tight font-medium tracking-[-0.03em] sm:text-[26px]">
                 Report your first issue in under a minute.
               </div>
             </div>
             <Link
               href={cta}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition-transform hover:-translate-y-px"
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary transition-transform hover:-translate-y-px sm:px-6 sm:py-3"
             >
               Get started <ArrowUpRight className="h-4 w-4" />
             </Link>
@@ -197,11 +197,11 @@ function SectionHead({ eyebrow, title, text }: { eyebrow: string; title: string;
         <div className="mb-3 font-mono text-[11px] font-semibold tracking-[0.05em] text-muted-foreground uppercase">
           {eyebrow}
         </div>
-        <h2 className="font-sans text-[30px] leading-[1.1] font-medium tracking-[-0.04em] text-foreground sm:text-[40px] short:text-[34px]">
+        <h2 className="font-sans text-[26px] leading-[1.1] font-medium tracking-[-0.04em] text-foreground sm:text-[30px] md:text-[40px] short:text-[34px]">
           {title}
         </h2>
       </div>
-      <p className="max-w-[380px] text-[14px] leading-relaxed text-muted-foreground lg:flex-1">{text}</p>
+      <p className="max-w-[380px] text-[13px] leading-relaxed text-muted-foreground sm:text-[14px] lg:flex-1">{text}</p>
     </div>
   );
 }
@@ -223,7 +223,7 @@ function Tile({
     <div
       className={cn(
         "relative rounded-3xl",
-        !plain && "overflow-hidden border border-border bg-card",
+        !plain && "overflow-hidden border border-border bg-card shadow-md",
         pad && "p-6 short:p-5",
         className,
       )}

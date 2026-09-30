@@ -162,7 +162,7 @@ export function ItemSearch() {
         {results.map((i) => {
           const s = WASTE_STREAMS[i.stream as WasteStream];
           return (
-            <li key={i.name} className="flex items-start gap-3 rounded-xl border border-bone bg-white p-3.5">
+            <li key={i.name} className="flex items-start gap-3 rounded-xl border border-bone bg-card p-3.5">
               <span className={cn("mt-1 h-3 w-3 shrink-0 rounded-full", s.swatch)} />
               <div className="min-w-0">
                 <div className="font-semibold text-ink">{i.name}</div>

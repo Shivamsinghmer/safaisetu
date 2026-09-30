@@ -69,14 +69,14 @@ const BentoCard = ({
       <div className="group relative h-full w-full overflow-hidden rounded-3xl border bg-card shadow-2xl shadow-primary/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-primary/10">
         <div className="relative z-10 space-y-1.5 p-5 sm:p-6">
           <h2 className="font-mono text-xs text-muted-foreground uppercase">{label}</h2>
-          <p className="max-w-[480px] text-lg leading-snug font-medium text-foreground sm:text-2xl">{title}</p>
+          <p className="max-w-[480px] text-base leading-snug font-medium text-foreground sm:text-lg md:text-2xl">{title}</p>
         </div>
 
-        <div className="relative h-[260px] w-full overflow-hidden rounded-2xl sm:h-[300px] sm:rounded-[2rem]">
-          <div className="absolute top-16 left-16 h-full w-full rounded-3xl border border-border/50 bg-muted opacity-80" />
+        <div className="relative h-[220px] w-full overflow-hidden rounded-xl sm:h-[260px] sm:rounded-2xl md:h-[300px] md:rounded-[2rem]">
+          <div className="absolute top-12 left-8 h-full w-full rounded-3xl border border-border/50 bg-muted opacity-80 sm:top-16 sm:left-16" />
 
-          <div className="absolute top-8 left-10 flex h-full w-full flex-col overflow-hidden rounded-tl-3xl bg-background shadow-xl ring-6 ring-border sm:left-24">
-            <div className="relative flex items-center rounded-tl-3xl border-b border-border/70 px-5 py-4 backdrop-blur-sm">
+          <div className="absolute top-4 left-4 flex h-full w-full flex-col overflow-hidden rounded-tl-2xl bg-background shadow-xl ring-4 ring-border sm:top-8 sm:left-10 sm:rounded-tl-3xl sm:ring-6 md:left-24">
+            <div className="relative flex items-center rounded-tl-2xl border-b border-border/70 px-3 py-2.5 backdrop-blur-sm sm:rounded-tl-3xl sm:px-5 sm:py-4">
               <div className="flex gap-1.5">
                 <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
                 <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
@@ -88,7 +88,7 @@ const BentoCard = ({
             </div>
 
             <div className="flex flex-1 overflow-hidden">
-              <div className="flex w-36 flex-col gap-1 border-r border-border/30 bg-muted/5 p-2 pt-6">
+              <div className="hidden w-28 flex-col gap-1 border-r border-border/30 bg-muted/5 p-2 pt-6 sm:flex sm:w-36">
                 <LayoutGroup>
                   {TABS.map((tab) => {
                     const isActive = activeTab.id === tab.id;

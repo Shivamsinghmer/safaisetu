@@ -126,7 +126,7 @@ function NavList({ sections, onNavigate }: { sections: NavSection[]; onNavigate?
 
 function UserBlock({ name, roleLabel }: { name: string; roleLabel: string }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-xl border border-bone bg-white p-2.5">
+    <div className="flex items-center gap-2.5 rounded-xl border border-bone bg-card p-2.5">
       <Avatar name={name} />
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold text-ink">{name}</div>
@@ -165,7 +165,7 @@ export function AppShell({
   return (
     <div className="min-h-dvh bg-mist">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] print:!hidden flex-col border-r border-bone bg-white lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] print:!hidden flex-col border-r border-bone bg-card lg:flex">
         <Link href="/app" className="flex h-16 items-center gap-2 px-5">
           <LogoMark />
           <span className="font-display text-[17px] font-extrabold tracking-[-0.03em] text-onyx">SafaiSetu</span>
@@ -179,7 +179,7 @@ export function AppShell({
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-30 flex h-14 print:hidden items-center justify-between border-b border-bone bg-white/90 px-4 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 flex h-14 print:hidden items-center justify-between border-b border-bone bg-card/90 px-4 backdrop-blur lg:hidden">
         <Link href="/app" className="flex items-center gap-2">
           <LogoMark className="h-6 w-6" />
           <span className="font-display text-base font-extrabold tracking-[-0.03em] text-onyx">SafaiSetu</span>
@@ -200,7 +200,7 @@ export function AppShell({
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm animate-rise flex-col bg-white">
+          <div className="absolute inset-y-0 right-0 flex w-[82%] max-w-sm animate-rise flex-col bg-card">
             <div className="flex h-14 items-center justify-between border-b border-bone px-4">
               <span className="label-mono">Menu</span>
               <button
@@ -227,7 +227,7 @@ export function AppShell({
 
       {/* Mobile bottom tabs */}
       {mobileTabs.length > 0 && (
-        <nav className="fixed inset-x-0 bottom-0 z-30 print:hidden border-t border-bone bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-30 print:hidden border-t border-bone bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
           <ul className="mx-auto flex max-w-md items-stretch justify-around">
             {mobileTabs.map((item) => {
               const Icon = ICONS[item.icon];

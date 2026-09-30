@@ -36,7 +36,7 @@ export function FeatureShowcase() {
   return (
     <div ref={ref} className={cn("reveal mx-auto w-full max-w-[1240px] px-4 sm:px-6", inView && "in-view")}>
       <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
-        <h2 className="flex-[1.2] font-sans text-[34px] leading-[1.1] font-medium tracking-[-0.04em] text-foreground sm:text-[46px] short:text-[40px]">
+        <h2 className="flex-[1.2] font-sans text-[28px] leading-[1.1] font-medium tracking-[-0.04em] text-foreground sm:text-[34px] md:text-[46px] short:text-[40px]">
           {lines.map((line, i) => (
             <span key={line} className="-mb-[5px] block overflow-hidden pb-[5px]">
               <span className="block animate-mask-up" style={{ animationDelay: `${i * 0.15}s` }}>
@@ -67,7 +67,7 @@ export function FeatureShowcase() {
         </div>
       </header>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
         <FeatureCard
           delay="0.5s"
           label="01 · Report"
@@ -116,7 +116,7 @@ function FeatureCard({
   return (
     <article
       className={cn(
-        "flex h-[400px] animate-fade-up flex-col overflow-hidden rounded-3xl bg-muted px-6 pt-6 pb-7 short:h-[340px] sm:h-[420px]",
+        "flex min-h-[340px] animate-fade-up flex-col overflow-hidden rounded-2xl bg-muted px-5 pt-5 pb-6 sm:min-h-[400px] sm:rounded-3xl sm:px-6 sm:pt-6 sm:pb-7 short:min-h-[340px] md:h-[420px]",
         className,
       )}
       style={{ animationDelay: delay }}
@@ -125,7 +125,7 @@ function FeatureCard({
         <div className="mb-2 font-mono text-[11px] font-semibold tracking-[0.05em] text-muted-foreground uppercase">
           {label}
         </div>
-        <h3 className="text-[20px] leading-[1.3] font-semibold tracking-[-0.02em] text-foreground">{title}</h3>
+        <h3 className="text-[18px] leading-[1.3] font-semibold tracking-[-0.02em] text-foreground sm:text-[20px]">{title}</h3>
       </div>
       <div className="relative flex flex-1 items-center justify-center">{children}</div>
       <ul className="mt-auto flex flex-col gap-2.5">

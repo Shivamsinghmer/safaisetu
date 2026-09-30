@@ -34,7 +34,7 @@ export default async function HomePage() {
     <>
       <div className="mb-8 animate-rise">
         <div className="label-mono mb-2">Home</div>
-        <h1 className="font-display text-[32px] leading-[1.1] font-bold tracking-[-0.04em] sm:text-heading">
+        <h1 className="font-display text-[28px] leading-[1.1] font-bold tracking-[-0.04em] sm:text-[32px] md:text-heading">
           Namaste, {firstName}.
         </h1>
         <p className="mt-2 text-[15px] text-slate">
@@ -145,7 +145,7 @@ function QuickAction({
       className={
         primary
           ? "group flex flex-col gap-4 rounded-xl bg-primary p-5 text-primary-foreground transition-colors hover:bg-primary/90"
-          : "group flex flex-col gap-4 rounded-xl border border-bone bg-white p-5 transition-colors hover:border-cloud"
+          : "group flex flex-col gap-4 rounded-xl border border-bone bg-card p-5 transition-colors hover:border-cloud"
       }
     >
       <span
