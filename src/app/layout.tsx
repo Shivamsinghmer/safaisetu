@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { ViewTransition } from "react";
 import "./globals.css";
 import { InlineScript } from "@/components/inline-script";
 import { PAGE_NAV } from "@/components/nav-link";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0f1a" },
+    { media: "(prefers-color-scheme: dark)", color: "#141712" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${bricolage.variable} ${jetbrains.variable} h-full`}
+      className={`${inter.variable} ${jetbrains.variable} h-full`}
       suppressHydrationWarning
     >
       <head>

@@ -12,7 +12,7 @@ const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">Open
 
 const STATUS_COLORS: Record<TicketStatus, string> = {
   submitted: "#838383",
-  assigned: "#6647f0",
+  assigned: "#7b68c8",
   in_progress: "#0091ff",
   resolved: "#00c07a",
   closed: "#00c07a",
@@ -61,7 +61,7 @@ export interface MapOrg {
   type: "society" | "college" | "public_place";
 }
 
-const ORG_COLORS = { society: "#6647f0", college: "#0091ff", public_place: "#fd9a46" };
+const ORG_COLORS = { society: "#3f7a28", college: "#0091ff", public_place: "#fd9a46" };
 
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();

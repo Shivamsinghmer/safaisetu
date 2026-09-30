@@ -108,7 +108,7 @@ const BentoCard = ({
                             className={cn(
                               "relative z-20 ml-auto rounded-md px-1 py-0.5 text-[8px] leading-none tabular-nums transition-all",
                               isActive
-                                ? "border border-primary/20 bg-primary/10 text-primary dark:text-foreground"
+                                ? "border border-brand/20 bg-brand/10 text-brand"
                                 : "border border-transparent bg-muted text-muted-foreground",
                             )}
                           >
@@ -176,7 +176,7 @@ const OverviewPanel = () => (
       <div className="relative z-10 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-[9px] font-medium text-muted-foreground">Resolved within SLA</span>
-          <HugeiconsIcon icon={CircleArrowUpRight02Icon} size={12} className="text-primary dark:text-foreground" />
+          <HugeiconsIcon icon={CircleArrowUpRight02Icon} size={12} className="text-brand" />
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-xl font-medium tracking-tight text-foreground">86.4%</span>

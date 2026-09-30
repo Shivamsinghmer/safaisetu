@@ -56,7 +56,7 @@ export function MapPanel({ tickets, orgs }: { tickets: MapTicket[]; orgs: MapOrg
         ) : (
           [
             ["#838383", "Submitted"],
-            ["#6647f0", "Assigned"],
+            ["#7b68c8", "Assigned"],
             ["#0091ff", "In progress"],
             ["#00c07a", "Resolved"],
             ["#fa24ce", "Reopened"],
@@ -70,7 +70,7 @@ export function MapPanel({ tickets, orgs }: { tickets: MapTicket[]; orgs: MapOrg
         {showOrgs && (
           <span className="ml-auto inline-flex items-center gap-3">
             {[
-              ["#6647f0", "Society"],
+              ["#3f7a28", "Society"],
               ["#0091ff", "College"],
               ["#fd9a46", "Public place"],
             ].map(([c, l]) => (
