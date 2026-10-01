@@ -40,7 +40,7 @@ export function FeatureShowcase() {
       <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
         <h2 className="flex-[1.2] font-sans text-[28px] leading-[1.1] font-medium tracking-[-0.04em] text-foreground sm:text-[34px] md:text-[46px] short:text-[40px]">
           {lines.map((line, i) => (
-            <span key={line} className="-mb-[5px] block overflow-hidden pb-[5px]">
+            <span key={line} className="text-mask -mb-[5px] block overflow-hidden pb-[5px]">
               <span className="block animate-mask-up" style={{ animationDelay: `${i * 0.15}s` }}>
                 {line}
               </span>

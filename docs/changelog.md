@@ -3,7 +3,10 @@
 Newest first. Add an entry under **Unreleased** with every change, and move it under a dated heading when it's pushed.
 
 ## Unreleased
-_Nothing yet._
+- Fix Hindi text being cut off: Noto Sans Devanagari is loaded for Hindi, `:lang(hi)` rules give headings and
+  tight-leading text more line height and drop negative letter-spacing, the hero and feature-showcase reveal masks
+  only clip their bottom edge in Hindi, the app shell carries `lang`, and the sidebar role label wraps instead of
+  truncating. Every landing, app, guest and auth page was checked at 375, 768, 1024 and 1280px.
 
 ## 2026-10-01 — Security hardening, product gaps, Hindi, notifications and Kanpur demo
 - Language dropdown (English / हिन्दी) in the landing nav, and on the guest QR and tracking pages. The whole landing

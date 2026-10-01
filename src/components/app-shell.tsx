@@ -135,7 +135,7 @@ function UserBlock({ name, roleLabel }: { name: string; roleLabel: string }) {
       <Avatar name={name} />
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold text-ink">{name}</div>
-        <div className="truncate text-xs text-ash">{roleLabel}</div>
+        <div className="text-xs leading-snug text-ash">{roleLabel}</div>
       </div>
       <ThemeToggle />
       <form action={signOutAction}>
@@ -168,12 +168,12 @@ export function AppShell({
   unread: number;
   children: ReactNode;
 }) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   return (
-    <div className="min-h-dvh bg-mist">
+    <div lang={locale} className="min-h-dvh bg-mist">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] print:!hidden flex-col border-r border-bone bg-card lg:flex">
         <div className="flex h-16 items-center justify-between pr-3 pl-5">

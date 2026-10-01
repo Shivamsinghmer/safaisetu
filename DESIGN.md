@@ -128,8 +128,14 @@ English and Hindi (`src/lib/i18n.ts`). The landing nav, guest QR page and tracki
 pill (globe icon + current language) built on `Select`; the app uses the language setting in `/app/settings`. Write user-facing text in plain English and wrap it in `t("…")`: the English
 string is the key, and a missing Hindi entry falls back to English. Use `getT()` in server components and `useT()` in
 client components. Statuses, severities and categories have helpers (`statusText`, `severityText`, `categoryText`);
-`StatusPill` and `SeverityTag` already translate themselves. Devanagari needs no font change: Inter falls back to the
-system Devanagari face.
+`StatusPill` and `SeverityTag` already translate themselves.
+**Devanagari typography.** Hindi uses Noto Sans Devanagari (`--font-devanagari`, after Inter in every font stack), and
+its marks sit above and below the letter line, so tight Inter tuning clips it. Pages set `lang={locale}` on their root
+(landing, app shell, guest pages), and `globals.css` applies `:lang(hi)` rules: normal letter-spacing, line-height 1.4
+on headings and `leading-tight`/`leading-snug`/`leading-[…]`, and 1.6 on `truncate`/`line-clamp-*`. Reveal masks
+(`overflow-hidden` wrappers around `animate-mask-up` lines) need the `text-mask` class; in Hindi they clip only the
+bottom edge. Prefer wrapping over `truncate` for short labels in narrow spots, since Hindi strings run longer. Mark
+brand-only text that must keep its English styling with `lang="en"` (e.g. the footer wordmark).
 
 ## Footer
 The landing footer's bin legend uses one card per stream: a tinted header band in the bin's color with the bin glyph

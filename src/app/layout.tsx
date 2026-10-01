@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Noto_Sans_Devanagari } from "next/font/google";
 import { ViewTransition } from "react";
 import "./globals.css";
 import { InlineScript } from "@/components/inline-script";
@@ -8,6 +8,13 @@ import { PAGE_NAV } from "@/components/nav-link";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+});
+
+// Inter has no Devanagari; this keeps Hindi text the same size and shape on every device
+const devanagari = Noto_Sans_Devanagari({
+  variable: "--font-devanagari",
+  subsets: ["devanagari"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const jetbrains = JetBrains_Mono({
@@ -42,7 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrains.variable} h-full`}
+      className={`${inter.variable} ${devanagari.variable} ${jetbrains.variable} h-full`}
       suppressHydrationWarning
     >
       <head>

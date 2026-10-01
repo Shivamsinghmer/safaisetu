@@ -34,7 +34,7 @@ export async function Hero({ ctaHref }: { ctaHref: string }) {
             {lines.map((line, i) => (
               <span
                 key={line}
-                className="-mb-[6px] block overflow-hidden pb-[6px]"
+                className="text-mask -mb-[6px] block overflow-hidden pb-[6px]"
               >
                 <span
                   className="block animate-mask-up"

@@ -242,7 +242,7 @@ export async function SiteFooter() {
         className="pointer-events-none mt-4 h-[11vw] overflow-hidden select-none sm:mt-6 lg:h-[132px]"
       >
         <div className="mx-auto max-w-[1240px] px-2 sm:px-4">
-          <div className="bg-linear-to-b from-foreground/[0.16] to-foreground/[0.02] bg-clip-text text-center text-[19vw] leading-[0.8] font-bold tracking-[-0.06em] text-transparent lg:text-[230px]">
+          <div lang="en" className="bg-linear-to-b from-foreground/[0.16] to-foreground/[0.02] bg-clip-text text-center text-[19vw] leading-[0.8] font-bold tracking-[-0.06em] text-transparent lg:text-[230px]">
             SafaiSetu
           </div>
         </div>
