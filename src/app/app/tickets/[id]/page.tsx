@@ -12,6 +12,7 @@ import { STATUS_META, categoryLabel, ORG_TYPE_META } from "@/lib/constants";
 import type { Organization, Ticket, TicketEvent } from "@/lib/types";
 import { cn, formatDate, formatHours, hoursBetween, isOverdue, timeAgo } from "@/lib/utils";
 import { TicketActions } from "./ticket-actions";
+import { ApprovalChip } from "@/components/proof";
 import { WorkerNavigator, WorkerTracker, type WorkerLocationRow } from "./live-tracking";
 import { getT } from "@/lib/i18n-server";
 import { categoryText } from "@/lib/i18n";
@@ -178,11 +179,18 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
               </div>
             </div>
           )}
-          {(before || after) && (
-            <div className={cn("grid gap-3", after && "sm:grid-cols-2")}>
-              {before && <Photo src={before} label="Reported" />}
-              {after && <Photo src={after} label="After cleanup" tone="good" />}
-            </div>
+          {after ? (
+            <ProofPanel
+              before={before ?? null}
+              after={after}
+              ticket={ticket}
+              viewerIsReporter={caps.reporter}
+              reporterName={ticket.source === "guest" ? null : nameOf(ticket.reporter_id)}
+              reopenNote={[...tl].reverse().find((e) => e.to_status === "reopened")?.note ?? null}
+              t={t}
+            />
+          ) : (
+            before && <Photo src={before} label={t("Reported")} />
           )}
 
           {ticket.description && (
@@ -211,6 +219,7 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
             </Card>
           )}
 
+          <div id="your-action" className="scroll-mt-24">
           <TicketActions
             ticketId={ticket.id}
             status={ticket.status}
@@ -223,6 +232,7 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
             workers={workers}
             userId={viewer.userId}
           />
+          </div>
 
           <Card>
             <CardHeader label="Timeline" title="What's happened" />
@@ -335,6 +345,103 @@ function Row({ icon, label, children }: { icon: React.ReactNode; label: string; 
         <dd className="mt-0.5 text-ink">{children}</dd>
       </div>
     </div>
+  );
+}
+
+/** Before and after side by side, with where the reporter's approval stands */
+function ProofPanel({
+  before,
+  after,
+  ticket,
+  viewerIsReporter,
+  reporterName,
+  reopenNote,
+  t,
+}: {
+  before: string | null;
+  after: string;
+  ticket: Ticket;
+  viewerIsReporter: boolean;
+  reporterName: string | null;
+  reopenNote: string | null;
+  t: (s: string, vars?: Record<string, string | number>) => string;
+}) {
+  const who = viewerIsReporter ? t("you") : (reporterName ?? t("the reporter"));
+  const title =
+    ticket.status === "closed"
+      ? t("Approved by {name}", { name: who })
+      : ticket.status === "reopened"
+        ? t("Reopened: not clean yet")
+        : viewerIsReporter
+          ? t("Is it clean? Compare and approve")
+          : reporterName
+            ? t("Waiting for {name}'s approval", { name: reporterName })
+            : t("Cleaned up");
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader label={t("Proof of cleanup")} title={title} action={<ApprovalChip status={ticket.status} rating={ticket.rating} t={t} />} />
+      <div className="grid grid-cols-2 gap-px bg-bone">
+        <ProofPhoto src={before} label={t("Before")} when={ticket.created_at} empty={t("No photo")} />
+        <ProofPhoto src={after} label={t("After")} when={ticket.resolved_at ?? ticket.updated_at} good />
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-bone px-5 py-3.5 text-sm">
+        {ticket.status === "resolved" && viewerIsReporter && (
+          <>
+            <span className="flex-1 text-slate">
+              {t("Look at both photos. If the spot is really clean, approve it; if not, reopen it with a note.")}
+            </span>
+            <a href="#your-action" className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground hover:bg-primary/90">
+              {t("Approve or reopen")}
+            </a>
+          </>
+        )}
+        {ticket.status === "resolved" && !viewerIsReporter && (
+          <span className="text-slate">
+            {reporterName
+              ? t("{name} has been asked to confirm. It closes when they approve, or comes back if they reopen it.", { name: reporterName })
+              : t("Reported by a visitor without an account, so there is no approval step.")}
+          </span>
+        )}
+        {ticket.status === "closed" && (
+          <span className="flex items-center gap-2 text-slate">
+            {ticket.rating ? (
+              <span className="flex" aria-label={t("{n} of 5 stars", { n: ticket.rating })}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star key={n} className={cn("h-4 w-4", n <= ticket.rating! ? "fill-amber text-amber" : "text-cloud")} aria-hidden />
+                ))}
+              </span>
+            ) : null}
+            {t("Approved {when}", { when: timeAgo(ticket.closed_at ?? ticket.updated_at) })}
+          </span>
+        )}
+        {ticket.status === "reopened" && (
+          <span className="text-ink">
+            {reopenNote ? <>&ldquo;{reopenNote}&rdquo; <span className="text-slate">· {who}</span></> : t("The reporter says the spot isn't clean yet.")}
+          </span>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function ProofPhoto({ src, label, when, good, empty }: { src: string | null; label: string; when: string | null; good?: boolean; empty?: string }) {
+  return (
+    <figure className="relative bg-mist">
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={label} className="aspect-[4/3] w-full object-cover" />
+      ) : (
+        <div className="flex aspect-[4/3] w-full items-center justify-center text-xs text-ash">{empty}</div>
+      )}
+      <figcaption className="absolute inset-x-2 top-2 flex items-center justify-between gap-2">
+        <span className={cn("rounded-full px-2.5 py-0.5 text-[11px] font-bold", good ? "bg-mint text-night" : "bg-white/95 text-ink")}>
+          {label}
+        </span>
+        {when && (
+          <span className="hidden rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-snow sm:inline">{timeAgo(when)}</span>
+        )}
+      </figcaption>
+    </figure>
   );
 }
 

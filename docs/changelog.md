@@ -5,6 +5,12 @@ Newest first. Add an entry under **Unreleased** with every change, and move it u
 ## Unreleased
 _Nothing yet._
 
+## 2026-10-01 — Proof of cleanup everywhere
+- Before and after photos and the reporter's approval are shown everywhere, not just the status: a "Proof of
+  cleanup" panel on the ticket page (side-by-side photos, approval state, jump to approve/reopen), thumbnails and an
+  approval chip ("Awaiting approval", "Approved · ★n") in every ticket list, an "Is it clean? Your approval is needed"
+  callout on the citizen home, and a "Recent cleanups" before/after strip on the municipal dashboard.
+
 ## 2026-10-01 — New logo, landing nav, no-scroll sidebar, required org proof
 - Organization registration now requires a proof document (registration certificate or authorisation letter):
   the submit button stays disabled until it is uploaded, the server rejects registrations without it, and oversized

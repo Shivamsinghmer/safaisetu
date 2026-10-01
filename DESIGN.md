@@ -120,6 +120,21 @@ drop so everything fits at 375px.
 - **Settings** (`/app/settings`) is three cards: profile, email preferences (checkbox rows with a title and one-line
   explanation), and language (pill radios that fill with `primary` when chosen).
 
+## Proof of cleanup
+- **Ticket page:** once a worker uploads the after photo, the photos become a "Proof of cleanup" card: Before | After
+  side by side (4:3, 1px `bone` gutter, white "Before" / mint "After" chips, time ago), a title that says where the
+  approval stands ("Is it clean? Compare and approve" for the reporter, "Waiting for {name}'s approval" for everyone
+  else, "Approved by …", "Reopened: not clean yet") and a footer strip: a primary "Approve or reopen" pill that jumps
+  to the action card for the reporter, stars and date when approved, the reopen note in quotes when reopened.
+- **Approval chip** (`ApprovalChip`, `src/components/proof.tsx`): amber "Awaiting approval" (resolved), emerald
+  "Approved · ★n" (closed), pink "Reopened". In ticket lists it sits beside the status pill (the reopened chip is
+  left out there, since the pill already says it).
+- **List thumbnails** (`ProofThumbs`): a 40px before square overlapped by the after square, with tiny "Before" /
+  "After" bands. When a list mixes rows with and without photos, rows without get a muted placeholder so titles align.
+- **Cleanup gallery** (`CleanupGallery`, `src/components/cleanup-gallery.tsx`): cards with the before/after pair,
+  category, code, ward, time and the approval chip. Used for "Recent cleanups" on the municipal dashboard and for
+  the amber "Is it clean? Your approval is needed" callout on the citizen home.
+
 ## Ticket actions
 - **Proof first:** whenever someone can resolve a ticket, the after-photo picker is shown and the success button stays
   disabled, reading "Add the after photo to resolve", until a photo is added.

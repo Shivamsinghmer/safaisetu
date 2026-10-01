@@ -1,9 +1,11 @@
 import Link from "@/components/nav-link";
-import { ChevronRight, Clock, QrCode, Truck, ArrowUpRight } from "lucide-react";
+import { ChevronRight, Clock, ImageOff, QrCode, Truck, ArrowUpRight } from "lucide-react";
 import { SeverityTag, StatusPill } from "@/components/ui";
 import { getT } from "@/lib/i18n-server";
 import { categoryText } from "@/lib/i18n";
 import type { TicketListRow } from "@/lib/tickets";
+import { signedUrls } from "@/lib/storage";
+import { ApprovalChip, ProofThumbs } from "@/components/proof";
 import { cn, isOverdue, timeAgo } from "@/lib/utils";
 
 export async function TicketList({
@@ -18,6 +20,11 @@ export async function TicketList({
   className?: string;
 }) {
   const { t: tr, locale } = await getT();
+  // One batch of signed URLs for every photo in the list (rows were already fetched through RLS)
+  const urls = await signedUrls(tickets.flatMap((t) => [t.photo_path, t.after_photo_path]));
+  const url = (p: string | null) => (p ? (urls.get(p) ?? null) : null);
+  // Keep titles aligned: when some rows have photos, rows without get an empty slot
+  const anyPhoto = tickets.some((t) => t.photo_path || t.after_photo_path);
   return (
     <ul className={cn("divide-y divide-bone overflow-hidden rounded-xl border border-bone bg-card", className)}>
       {tickets.map((t) => {
@@ -28,6 +35,13 @@ export async function TicketList({
               href={`/app/tickets/${t.id}`}
               className="group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-mist sm:gap-4 sm:px-5"
             >
+              {t.photo_path || t.after_photo_path ? (
+                <ProofThumbs before={url(t.photo_path)} after={url(t.after_photo_path)} t={tr} size={40} />
+              ) : anyPhoto ? (
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-mist text-fog" aria-hidden>
+                  <ImageOff className="h-4 w-4" />
+                </span>
+              ) : null}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="font-mono text-[12px] font-medium text-ash">{t.code}</span>
@@ -57,7 +71,10 @@ export async function TicketList({
                 </div>
               </div>
               <div className="hidden shrink-0 flex-col items-end gap-1.5 sm:flex">
-                <StatusPill status={t.status} />
+                <div className="flex items-center gap-1.5">
+                  {t.status !== "reopened" && <ApprovalChip status={t.status} rating={t.rating} t={tr} />}
+                  <StatusPill status={t.status} />
+                </div>
                 <div className="flex items-center gap-3">
                   <SeverityTag severity={t.severity} />
                   <span className={cn("inline-flex items-center gap-1 text-xs", overdue ? "font-semibold text-coral" : "text-ash")}>
@@ -68,6 +85,9 @@ export async function TicketList({
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1 sm:hidden">
                 <StatusPill status={t.status} />
+                {t.status !== "reopened" && (
+                  <ApprovalChip status={t.status} rating={t.rating} t={tr} className="px-1.5 text-[10px]" />
+                )}
                 <span className={cn("text-[11px]", overdue ? "font-semibold text-coral" : "text-ash")}>
                   {overdue ? tr("Overdue") : timeAgo(t.created_at)}
                 </span>

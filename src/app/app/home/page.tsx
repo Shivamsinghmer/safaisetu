@@ -3,6 +3,7 @@ import Link from "@/components/nav-link";
 import { ArrowRight, BookOpen, Building2, Camera, Clock, Truck, UserPlus } from "lucide-react";
 import { ButtonLink, Card, CardHeader, Pill } from "@/components/ui";
 import { TicketList } from "@/components/ticket-list";
+import { CleanupGallery, type CleanupRow } from "@/components/cleanup-gallery";
 import { NoticeList } from "@/components/notice-list";
 import { requireViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -17,7 +18,7 @@ export default async function HomePage() {
   const viewer = await requireViewer();
   const supabase = await createClient();
   const { t } = await getT();
-  const [{ data: tickets }, { data: notices }] = await Promise.all([
+  const [{ data: tickets }, { data: notices }, { data: reviewRows }] = await Promise.all([
     supabase
       .from("tickets")
       .select(TICKET_LIST_SELECT)
@@ -25,10 +26,18 @@ export default async function HomePage() {
       .order("updated_at", { ascending: false })
       .limit(6),
     supabase.from("notices").select("*").order("created_at", { ascending: false }).limit(5),
+    // Cleanups waiting for this person's approval, with their photos
+    supabase
+      .from("tickets")
+      .select(`${TICKET_LIST_SELECT}, resolved_at`)
+      .eq("reporter_id", viewer.userId)
+      .eq("status", "resolved")
+      .order("updated_at", { ascending: false })
+      .limit(3),
   ]);
+  const toReview = (reviewRows ?? []) as unknown as CleanupRow[];
   const mine = (tickets ?? []) as unknown as TicketListRow[];
   const open = mine.filter((t) => OPEN_STATUSES.includes(t.status)).length;
-  const toConfirm = mine.filter((t) => t.status === "resolved");
   const orgName = new Map(viewer.memberships.map((m) => [m.org_id, m.organization.name]));
   const firstName = (viewer.profile.full_name || "there").split(" ")[0];
 
@@ -41,16 +50,25 @@ export default async function HomePage() {
         </h1>
         <p className="mt-2 text-[15px] text-slate">
           {open ? t("You have {n} open ticket(s).", { n: open }) : t("Nothing pending. Your area looks good.")}
-          {toConfirm.length > 0 && (
-            <>
-              {" "}
-              <Link href="/app/tickets?tab=review" className="font-semibold text-blue">
-                {t("{n} need your confirmation →", { n: toConfirm.length })}
-              </Link>
-            </>
-          )}
         </p>
       </div>
+
+      {toReview.length > 0 && (
+        <section className="mb-8 animate-rise rounded-2xl border border-amber/30 bg-amber/[0.06] p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="font-display text-lg font-bold tracking-[-0.02em]">{t("Is it clean? Your approval is needed")}</h2>
+              <p className="text-sm text-slate">
+                {t("A worker has uploaded an after photo. Compare it with yours, then approve or reopen.")}
+              </p>
+            </div>
+            <Link href="/app/tickets?tab=review" className="inline-flex items-center gap-1 text-sm font-semibold text-blue">
+              {t("All to review")} <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          <CleanupGallery tickets={toReview} />
+        </section>
+      )}
 
       <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <QuickAction href="/app/report" icon={<Camera className="h-5 w-5" />} title={t("Report an issue")} text={t("Overflowing bin, garbage on road, dumping")} primary />

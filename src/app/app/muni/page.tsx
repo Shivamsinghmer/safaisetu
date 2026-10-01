@@ -1,3 +1,4 @@
+import { CleanupGallery, type CleanupRow } from "@/components/cleanup-gallery";
 import type { Metadata } from "next";
 import Link from "@/components/nav-link";
 import { AlertTriangle, ArrowRight } from "lucide-react";
@@ -35,6 +36,7 @@ export default async function MuniDashboard() {
     { data: dailyRows },
     { data: breakdownRows },
     { data: urgentRows },
+    { data: cleanupRows },
   ] =
     await Promise.all([
       // Map points only: recent tickets, capped for the map's sake
@@ -56,7 +58,16 @@ export default async function MuniDashboard() {
         .order("severity", { ascending: false })
         .order("created_at", { ascending: true })
         .limit(8),
+      // Latest work with an after photo, for the before/after review strip
+      supabase
+        .from("tickets")
+        .select(`${TICKET_LIST_SELECT}, resolved_at`)
+        .in("status", ["resolved", "closed", "reopened"])
+        .not("after_photo_path", "is", null)
+        .order("updated_at", { ascending: false })
+        .limit(6),
     ]);
+  const cleanups = (cleanupRows ?? []) as unknown as CleanupRow[];
   const needsAssignment = (urgentRows ?? []) as unknown as TicketListRow[];
   const tickets = (ticketRows ?? []) as unknown as (TicketListRow & { resolved_at: string | null })[];
   const orgs = (orgRows ?? []) as { id: string; name: string; type: OrgType; status: string; lat: number; lng: number; ward_id: string | null }[];
@@ -268,6 +279,25 @@ export default async function MuniDashboard() {
           </div>
         </Card>
       </div>
+
+      <section className="mb-6">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-lg font-bold tracking-[-0.02em]">Recent cleanups</h2>
+            <p className="text-sm text-slate">Before and after photos from the field, with the reporter&apos;s approval.</p>
+          </div>
+          <Link href="/app/muni/tickets?tab=resolved" className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-blue">
+            All resolved <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        {cleanups.length ? (
+          <CleanupGallery tickets={cleanups} />
+        ) : (
+          <Card className="p-6 text-sm text-slate">
+            No cleanups with an after photo yet. They appear here as soon as a worker resolves a complaint.
+          </Card>
+        )}
+      </section>
 
       <section>
         <div className="mb-3 flex items-center justify-between">

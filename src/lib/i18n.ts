@@ -310,6 +310,28 @@ const HI: Record<string, string> = {
   "Upload failed. Check your connection and try again.": "अपलोड नहीं हुआ। इंटरनेट जाँचकर दोबारा कोशिश करें।",
   Retake: "दोबारा लें",
 
+  // Proof of cleanup
+  "Approved": "मंज़ूर",
+  "Proof of cleanup": "सफ़ाई का सबूत",
+  "Approved by {name}": "{name} ने मंज़ूर किया",
+  "you": "आप",
+  "the reporter": "शिकायतकर्ता",
+  "Reopened: not clean yet": "फिर खोली गई: अभी साफ़ नहीं",
+  "Is it clean? Compare and approve": "क्या साफ़ हुआ? तुलना करें और मंज़ूर करें",
+  "Waiting for {name}'s approval": "{name} की मंज़ूरी का इंतज़ार",
+  "Cleaned up": "साफ़ किया गया",
+  "No photo": "फ़ोटो नहीं",
+  "Look at both photos. If the spot is really clean, approve it; if not, reopen it with a note.": "दोनों फ़ोटो देखें। अगर जगह सच में साफ़ है तो मंज़ूर करें, नहीं तो नोट के साथ फिर खोलें।",
+  "Approve or reopen": "मंज़ूर करें या फिर खोलें",
+  "{name} has been asked to confirm. It closes when they approve, or comes back if they reopen it.": "{name} से पुष्टि माँगी गई है। उनके मंज़ूर करने पर यह बंद होगी, या फिर खोलने पर वापस आएगी।",
+  "Reported by a visitor without an account, so there is no approval step.": "यह शिकायत बिना खाते वाले आगंतुक ने की है, इसलिए मंज़ूरी का चरण नहीं है।",
+  "{n} of 5 stars": "5 में से {n} स्टार",
+  "Approved {when}": "मंज़ूर: {when}",
+  "The reporter says the spot isn't clean yet.": "शिकायतकर्ता के अनुसार जगह अभी साफ़ नहीं है।",
+  "Is it clean? Your approval is needed": "क्या साफ़ हुआ? आपकी मंज़ूरी चाहिए",
+  "A worker has uploaded an after photo. Compare it with yours, then approve or reopen.": "कर्मचारी ने सफ़ाई के बाद की फ़ोटो डाली है। अपनी फ़ोटो से तुलना करें, फिर मंज़ूर करें या फिर खोलें।",
+  "All to review": "सभी जाँचने वाली",
+
   // Live tracking
   "min": "मिनट",
   "Location isn't available on this device.": "इस डिवाइस पर लोकेशन उपलब्ध नहीं है।",
