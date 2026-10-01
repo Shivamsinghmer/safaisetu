@@ -11,6 +11,34 @@ export interface CapturedPhoto {
   path: string;
   previewUrl: string;
   dataUrl: string;
+  /** The original file's timestamp: the capture time for camera photos */
+  takenAt: number;
+  /** 64-bit difference hash (hex) of the photo, to spot the same photo used twice; "" if it couldn't be made */
+  hash: string;
+}
+
+/** Difference hash: shrink to 9×8 grey pixels and record whether each pixel is brighter than its right neighbour */
+async function dHash(blob: Blob) {
+  try {
+    const bmp = await createImageBitmap(blob);
+    const c = document.createElement("canvas");
+    c.width = 9;
+    c.height = 8;
+    const ctx = c.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return "";
+    ctx.drawImage(bmp, 0, 0, 9, 8);
+    bmp.close();
+    const d = ctx.getImageData(0, 0, 9, 8).data;
+    const lum = (x: number, y: number) => {
+      const i = (y * 9 + x) * 4;
+      return d[i]! * 0.299 + d[i + 1]! * 0.587 + d[i + 2]! * 0.114;
+    };
+    let bits = "";
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) bits += lum(x, y) > lum(x + 1, y) ? "1" : "0";
+    return BigInt(`0b${bits}`).toString(16).padStart(16, "0");
+  } catch {
+    return "";
+  }
 }
 
 /**
@@ -62,7 +90,7 @@ export function PhotoCapture({
         .storage.from(bucket)
         .upload(path, compressed, { contentType: "image/jpeg", upsert: false });
       if (upErr) throw upErr;
-      onCaptured({ path, previewUrl, dataUrl });
+      onCaptured({ path, previewUrl, dataUrl, takenAt: file.lastModified, hash: await dHash(compressed) });
     } catch (e) {
       console.error(e);
       setError(t("Upload failed. Check your connection and try again."));

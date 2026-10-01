@@ -52,21 +52,23 @@ function classify(e: unknown): AiError {
   return new AiError("network", msg);
 }
 
-async function visionJson(imageDataUrl: string, prompt: string) {
+/** One or more images (data URLs or https URLs) plus a prompt; returns the parsed JSON reply */
+async function visionJson(images: string | string[], prompt: string, maxTokens = 600) {
+  const urls = Array.isArray(images) ? images : [images];
   let last: AiError | null = null;
   for (const model of VISION_MODELS) {
     try {
       const res = await groq().chat.completions.create({
         model,
         temperature: 0.2,
-        max_completion_tokens: 600,
+        max_completion_tokens: maxTokens,
         response_format: { type: "json_object" },
         messages: [
           {
             role: "user",
             content: [
               { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: imageDataUrl } },
+              ...urls.map((url) => ({ type: "image_url" as const, image_url: { url } })),
             ],
           },
         ],
@@ -139,4 +141,53 @@ Identify the main item in the photo and respond with JSON only:
 }`,
   );
   return itemSchema.parse(raw);
+}
+
+const cleanupSchema = z.object({
+  same_place: z.boolean().catch(false),
+  same_place_confidence: z.number().min(0).max(1).catch(0.5),
+  cleaned: z.boolean().catch(false),
+  cleaned_confidence: z.number().min(0).max(1).catch(0.5),
+  reused_before: z.boolean().catch(false),
+  ai_generated: z.boolean().catch(false),
+  ai_generated_confidence: z.number().min(0).max(1).catch(0),
+  screen_photo: z.boolean().catch(false),
+  summary: z.string().max(300).catch(""),
+});
+
+export type CleanupCheck = z.infer<typeof cleanupSchema>;
+
+/**
+ * Compares the reported photo with the worker's after photo: same place? cleaned? and is the after photo a genuine
+ * camera photo (not the reporter's photo again, not a picture of a screen, not AI-generated or edited)?
+ * Without a before photo only the after photo itself is judged.
+ */
+export async function verifyCleanup(beforeUrl: string | null, afterUrl: string): Promise<CleanupCheck> {
+  const intro = beforeUrl
+    ? `Image 1 is the BEFORE photo a citizen took when reporting a waste problem in an Indian city.
+Image 2 is the AFTER photo a sanitation worker submitted as proof the spot was cleaned.`
+    : `The image is the AFTER photo a sanitation worker submitted as proof that a reported waste problem was cleaned.
+There is no before photo: judge same_place from whether it plausibly shows a street/premises spot, and keep its
+confidence low.`;
+  const raw = await visionJson(
+    beforeUrl ? [beforeUrl, afterUrl] : [afterUrl],
+    `You audit cleanup proof for a municipality. ${intro}
+Be strict but fair: workers often shoot from a slightly different angle, distance or light.
+Respond with JSON only:
+{
+  "same_place": boolean,              // the same location: match permanent features (walls, gates, poles, trees, road
+                                      // edges, kerbs, drains, shop fronts, signs, tiles), not the garbage itself
+  "same_place_confidence": number,    // 0..1
+  "cleaned": boolean,                 // the waste visible before is gone and the spot is reasonably clean now
+  "cleaned_confidence": number,       // 0..1
+  "reused_before": boolean,           // image 2 is the same photograph as image 1 (or a crop/filter/edit of it)
+  "ai_generated": boolean,            // signs of a synthetic or edited image: warped or melted details, garbled text,
+                                      // impossible lighting/shadows, smeared textures, pasted or cloned regions
+  "ai_generated_confidence": number,  // 0..1
+  "screen_photo": boolean,            // a photo of a screen or printout (moire, pixels, bezels, glare)
+  "summary": string                   // one plain sentence for the officer, max 25 words
+}`,
+    500,
+  );
+  return cleanupSchema.parse(raw);
 }

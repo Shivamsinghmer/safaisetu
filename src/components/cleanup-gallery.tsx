@@ -1,5 +1,6 @@
 import Link from "@/components/nav-link";
 import { ApprovalChip } from "@/components/proof";
+import { AfterCheckBadge, checkFor } from "@/components/after-check";
 import { getT } from "@/lib/i18n-server";
 import { categoryText } from "@/lib/i18n";
 import { signedUrls } from "@/lib/storage";
@@ -37,7 +38,12 @@ export async function CleanupGallery({ tickets }: { tickets: CleanupRow[] }) {
                   {r.ward?.name ? ` · ${r.ward.name}` : ""} · {timeAgo(r.resolved_at ?? r.updated_at)}
                 </div>
               </div>
-              <ApprovalChip status={r.status} rating={r.rating} t={t} className="shrink-0" />
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <ApprovalChip status={r.status} rating={r.rating} t={t} />
+                {checkFor(r.after_check, r.after_photo_path) && (
+                  <AfterCheckBadge check={checkFor(r.after_check, r.after_photo_path)!} t={t} />
+                )}
+              </div>
             </div>
           </Link>
         </li>

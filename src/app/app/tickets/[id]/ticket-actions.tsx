@@ -10,9 +10,12 @@ import {
   Star,
   UserCheck,
   XCircle,
+  Loader2,
 } from "lucide-react";
-import { updateTicketAction } from "@/app/actions/tickets";
-import { PhotoCapture } from "@/components/photo-capture";
+import { checkAfterPhotoAction, updateTicketAction } from "@/app/actions/tickets";
+import { PhotoCapture, type CapturedPhoto } from "@/components/photo-capture";
+import { AfterCheckDetails } from "@/components/after-check";
+import type { AfterCheck } from "@/lib/types";
 import {
   Card,
   CardHeader,
@@ -60,6 +63,53 @@ export function TicketActions({
   const { t } = useT();
   const [state, action] = useActionState(updateTicketAction, null);
   const [afterPhoto, setAfterPhoto] = useState("");
+  const [signals, setSignals] = useState<Record<string, string>>({});
+  const [check, setCheck] = useState<AfterCheck | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
+
+  /** Where the device is right now, if it will say (for "taken N m from the spot") */
+  function here(): Promise<GeolocationCoordinates | null> {
+    if (!("geolocation" in navigator)) return Promise.resolve(null);
+    return new Promise((resolve) =>
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve(p.coords),
+        () => resolve(null),
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 },
+      ),
+    );
+  }
+
+  async function onAfterPhoto(p: CapturedPhoto) {
+    setAfterPhoto(p.path);
+    setCheck(null);
+    setCheckError(null);
+    setChecking(true);
+    const pos = await here();
+    const sig = {
+      lat: pos?.latitude,
+      lng: pos?.longitude,
+      accuracy: pos?.accuracy,
+      takenAt: p.takenAt,
+      hash: p.hash || undefined,
+    };
+    setSignals(
+      Object.fromEntries(
+        Object.entries({ sig_lat: sig.lat, sig_lng: sig.lng, sig_acc: sig.accuracy, sig_taken: sig.takenAt, sig_hash: sig.hash })
+          .filter(([, v]) => v !== undefined)
+          .map(([k, v]) => [k, String(v)]),
+      ),
+    );
+    try {
+      const res = await checkAfterPhotoAction(ticketId, p.path, sig);
+      if (res.ok) setCheck(res.check);
+      else setCheckError(res.error);
+    } catch {
+      setCheckError(t("The photo check couldn't run. You can still resolve; a person will review it."));
+    } finally {
+      setChecking(false);
+    }
+  }
   const [rating, setRating] = useState(0);
 
   const open = ["submitted", "reopened", "assigned", "in_progress"].includes(
@@ -104,6 +154,9 @@ export function TicketActions({
       <form action={action} className="flex flex-col gap-4 p-5">
         <input type="hidden" name="ticket_id" value={ticketId} />
         <input type="hidden" name="after_photo_path" value={afterPhoto} />
+        {Object.entries(signals).map(([k, v]) => (
+          <input key={k} type="hidden" name={k} value={v} />
+        ))}
         {rating > 0 && <input type="hidden" name="rating" value={rating} />}
 
         {reporterCan && (
@@ -193,8 +246,51 @@ export function TicketActions({
             <PhotoCapture
               userId={userId}
               label="Photo after cleanup"
-              onCaptured={(p) => setAfterPhoto(p.path)}
+              onCaptured={(p) => void onAfterPhoto(p)}
+              analyzing={checking}
             />
+            <p className="mt-2 text-xs text-ash">
+              {t("Take it at the spot, from about where the reported photo was taken. AI compares the two, and your location is checked against the pin.")}
+            </p>
+            {checking && (
+              <div className="mt-3 flex items-center gap-2 rounded-xl bg-mist px-3.5 py-3 text-sm text-slate" role="status">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("Checking the photo: same place, cleaned, genuine…")}
+              </div>
+            )}
+            {checkError && !checking && <p className="mt-3 text-sm text-slate">{checkError}</p>}
+            {check && !checking && (
+              <div
+                className={cn(
+                  "mt-3 rounded-xl border p-3.5",
+                  check.verdict === "pass"
+                    ? "border-emerald/30 bg-emerald/[0.06]"
+                    : check.verdict === "review"
+                      ? "border-amber/35 bg-amber/[0.07]"
+                      : "border-coral/35 bg-coral/[0.06]",
+                )}
+              >
+                <AfterCheckDetails check={check} t={t} />
+                {check.verdict === "fail" && (
+                  <div className="mt-3 flex flex-col gap-1.5">
+                    <label htmlFor="flag_reason" className="text-sm font-semibold text-ink">
+                      {t("Retake the photo at the spot, or explain why this one is correct")}
+                    </label>
+                    <Textarea
+                      id="flag_reason"
+                      name="flag_reason"
+                      minLength={10}
+                      maxLength={400}
+                      placeholder={t("e.g. The bin was moved to the next corner after cleaning")}
+                      className="min-h-16"
+                    />
+                    <p className="text-xs text-ash">
+                      {t("Flagged photos go to the officer and the reporter with your explanation.")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -253,12 +349,18 @@ export function TicketActions({
             <SubmitButton
               name="status"
               value="resolved"
-              variant="success"
-              disabled={!afterPhoto}
+              variant={check?.verdict === "fail" ? "danger" : "success"}
+              disabled={!afterPhoto || checking}
             >
               <Check className="h-4 w-4" />{" "}
               {t(
-                afterPhoto ? "Mark resolved" : "Add the after photo to resolve",
+                !afterPhoto
+                  ? "Add the after photo to resolve"
+                  : checking
+                    ? "Checking the photo…"
+                    : check?.verdict === "fail"
+                      ? "Submit for review anyway"
+                      : "Mark resolved",
               )}
             </SubmitButton>
           )}

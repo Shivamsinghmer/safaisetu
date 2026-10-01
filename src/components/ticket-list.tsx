@@ -6,6 +6,7 @@ import { categoryText } from "@/lib/i18n";
 import type { TicketListRow } from "@/lib/tickets";
 import { signedUrls } from "@/lib/storage";
 import { ApprovalChip, ProofThumbs } from "@/components/proof";
+import { AfterCheckBadge, checkFor } from "@/components/after-check";
 import { cn, isOverdue, timeAgo } from "@/lib/utils";
 
 export async function TicketList({
@@ -72,6 +73,10 @@ export async function TicketList({
               </div>
               <div className="hidden shrink-0 flex-col items-end gap-1.5 sm:flex">
                 <div className="flex items-center gap-1.5">
+                  {(() => {
+                    const c = checkFor(t.after_check, t.after_photo_path);
+                    return c && c.verdict !== "pass" ? <AfterCheckBadge check={c} t={tr} /> : null;
+                  })()}
                   {t.status !== "reopened" && <ApprovalChip status={t.status} rating={t.rating} t={tr} />}
                   <StatusPill status={t.status} />
                 </div>

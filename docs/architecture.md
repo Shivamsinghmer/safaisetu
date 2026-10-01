@@ -29,7 +29,7 @@ One account can be a citizen and an org admin at the same time. `/app` redirects
 | File | Actions |
 |---|---|
 | `auth.ts` | `signInAction`, `signUpAction`, `demoSignInAction`, `signOutAction` |
-| `tickets.ts` | `createTicketAction`, `updateTicketAction` (calls the `update_ticket` RPC), `forwardPickupsAction`, `findNearbyAction`, `supportTicketAction`, `createGuestReportAction` |
+| `tickets.ts` | `createTicketAction`, `updateTicketAction` (calls the `update_ticket` RPC; resolving needs a checked after photo), `checkAfterPhotoAction`, `forwardPickupsAction`, `findNearbyAction`, `supportTicketAction`, `createGuestReportAction` |
 | `account.ts` | `updateSettingsAction` (name, phone, email preferences, language), `markNotificationsReadAction` |
 | `orgs.ts` | Registering and reviewing orgs, joining by code or invite, inviting and approving members, notices, QR points |
 | `ai.ts` | `analyzePhotoAction`, `analyzeGuestPhotoAction` (guest QR page), `classifyItemAction` |
@@ -41,7 +41,8 @@ One account can be a citizen and an org admin at the same time. `/app` redirects
 `municipalities` → `wards` → `organizations` (society | college | public_place; pending → approved/rejected)
 → `memberships`, `invitations`, `qr_points`, `notices`.
 `profiles` (1:1 with `auth.users`; also `email_updates`, `email_notices`, `locale`). `tickets` (kind `issue` | `pickup`,
-scope `internal` | `municipal`, source `app` | `qr` | `guest`, `scheduled_for`, `guest_contact`, `public_token`)
+scope `internal` | `municipal`, source `app` | `qr` | `guest`, `scheduled_for`, `guest_contact`, `public_token`,
+`after_check` (the after-photo check, server-written only: trigger `private.guard_after_check`))
 → `ticket_events` (audit log), `ticket_supporters` ("me too"), `worker_locations` (live worker position, one row per
 ticket, only while it is in progress). `notifications` (in-app, per user).
 `private.rate_limits` (fixed-window counters, server only).
@@ -111,6 +112,22 @@ invite batches 10/user/hour.
   "has been decommissioned"), so a stale `GROQ_VISION_MODEL` can't break AI. In dev, `failure()` in `actions/ai.ts`
   shows the real cause; in production the friendly message ends with the kind in brackets, e.g. "(auth)".
 - The Learn page uses `classifyItemAction` ("which bin does this go in?").
+
+## After-photo check (`src/lib/after-check.ts`)
+When someone uploads the after photo to resolve a ticket, `checkAfterPhotoAction` runs `runAfterCheck` straight away:
+- **AI** (`verifyCleanup` in `groq.ts`, before + after photos in one request): same place (permanent features, not
+  the garbage), cleaned, the reported photo re-used, a photo of a screen, AI-generated or edited.
+- **Device signals** sent with the photo: GPS distance from the pin (>250 m review, >2 km fail, allowing for GPS
+  accuracy), the file timestamp vs the first assignment (older → review), and a 64-bit difference hash compared
+  with every other recorded after photo (≤4 bits apart → "the same photo was already used as proof on SS-…").
+- The verdict is the worst finding: `fail` > `review` > `pass`. It is saved on `tickets.after_check` with the
+  photo path, reasons, the AI summary and the hash, by the service role only. A check whose `path` isn't the current
+  `after_photo_path` is ignored (and dropped by the trigger when the photo changes).
+- `updateTicketAction` re-uses the check for that photo (or runs it), and refuses `resolved` on a `fail` unless the
+  worker gives an explanation (`flag_reason`, ≥10 chars), stored as `after_check.override`. AI can be wrong, so a
+  flag never blocks for good; the reporter's approval and the officer still decide.
+- Shown on the ticket's Proof of cleanup panel, as chips in lists (flags only) and the cleanup gallery, and in the
+  municipal queue's "Flagged by AI" tab. AI calls share the 40/user/hour limit.
 
 ## Maps
 - Leaflet + react-leaflet with OpenStreetMap tiles (no key). Components are in `src/components/maps/`, loaded

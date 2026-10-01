@@ -134,6 +134,7 @@ export interface Ticket {
   resolved_at: string | null;
   closed_at: string | null;
   rating: number | null;
+  after_check: AfterCheck | null;
   scheduled_for: string | null;
   guest_contact: string | null;
   public_token: string;
@@ -162,3 +163,28 @@ export interface Notice {
 }
 
 export type ActionState = { ok?: boolean; error?: string; message?: string } | null;
+
+/** Server-recorded check of a cleanup's after photo (AI comparison + device signals). See lib/after-check.ts */
+export type AfterCheckVerdict = "pass" | "review" | "fail";
+
+export interface AfterCheck {
+  version: 1;
+  /** The after photo this check belongs to */
+  path: string;
+  verdict: AfterCheckVerdict;
+  /** What was found, worst first: "fail" and "review" items explain the verdict, "ok" items confirm */
+  reasons: { level: "fail" | "review" | "ok" | "note"; text: string }[];
+  /** The AI's one-line summary for the officer */
+  summary: string;
+  same_place: boolean | null;
+  cleaned: boolean | null;
+  /** Not reused, not a screen photo, not AI-generated */
+  genuine: boolean | null;
+  /** Metres from the reported spot when the photo was taken, if the device shared its location */
+  distance_m: number | null;
+  /** 64-bit difference hash of the after photo, to catch the same photo used twice */
+  hash: string | null;
+  checked_at: string;
+  /** The worker's explanation when they submitted a flagged photo anyway */
+  override?: string;
+}

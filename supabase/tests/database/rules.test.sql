@@ -4,7 +4,7 @@
 -- Fixtures live in Nagpur and Pune, far from any real ward, so they never mix with live data.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(35);
+select plan(36);
 
 -- ---------------------------------------------------------------------
 -- Fixtures (as postgres: triggers treat this like the service role)
@@ -116,6 +116,9 @@ select lives_ok(
   'the worker resolves with an after photo');
 select is((select count(*) from public.worker_locations where ticket_id = '40000000-0000-0000-0000-000000000002')::int, 0,
   'the live location is deleted once the task is resolved');
+select throws_ok(
+  $$update public.tickets set after_check = '{"verdict": "pass"}' where id = '40000000-0000-0000-0000-000000000002'$$,
+  '42501', null, 'only the server can record the AI photo check');
 
 -- ---------------------------------------------------------------------
 -- Escalation by the resident, only after the deadline

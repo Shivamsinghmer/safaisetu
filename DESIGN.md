@@ -134,6 +134,12 @@ drop so everything fits at 375px.
   approval stands ("Is it clean? Compare and approve" for the reporter, "Waiting for {name}'s approval" for everyone
   else, "Approved by …", "Reopened: not clean yet") and a footer strip: a primary "Approve or reopen" pill that jumps
   to the action card for the reporter, stars and date when approved, the reopen note in quotes when reopened.
+- **AI photo check** (`src/components/after-check.tsx`): a verdict chip with a shield icon, emerald "AI verified",
+  amber "Needs review", coral "Flagged by AI", then the findings worst first (coral ✕, amber ⚠, grey ⓘ note, emerald
+  ✓) in two columns, the AI's one-line summary and, if the worker overrode a flag, their explanation in a muted box.
+  It sits under the before/after photos on the ticket page and in a tinted card under the worker's after photo
+  (with a required "explain why" box and a coral "Submit for review anyway" button on a flag). Lists show the chip
+  only for flags; the cleanup gallery always shows it.
 - **Approval chip** (`ApprovalChip`, `src/components/proof.tsx`): amber "Awaiting approval" (resolved), emerald
   "Approved · ★n" (closed), pink "Reopened". In ticket lists it sits beside the status pill (the reopened chip is
   left out there, since the pill already says it).

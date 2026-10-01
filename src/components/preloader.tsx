@@ -44,6 +44,9 @@ const FRAGMENTS = Array.from({ length: COUNT }, (_, i) => {
 const INTRO_END_MS = 1480; // the mark and caption are complete (matches the CSS timeline)
 const FONT_WAIT_MS = 1500; // never hold the exit for a slow web font
 const REDUCED_MIN_MS = 300;
+// Hard caps, because a hidden or throttled tab never advances its animations: the page must never stay locked
+const INTRO_CAP_MS = 4000;
+const EXIT_CAP_MS = 1400;
 
 function sleep(ms: number) {
   return new Promise<void>((r) => setTimeout(r, Math.max(0, ms)));
@@ -100,16 +103,30 @@ export function Preloader() {
       setDone(true);
     };
 
+    // Opened in a background tab: nobody is watching, so let the page be ready when they switch to it
+    if (document.visibilityState === "hidden") {
+      queueMicrotask(finish);
+      return () => {
+        cancelled = true;
+        app?.removeAttribute("inert");
+      };
+    }
+
     (async () => {
       const fonts = Promise.race([document.fonts?.ready ?? Promise.resolve(), sleep(FONT_WAIT_MS)]);
       if (reduce) await Promise.all([fonts, sleep(REDUCED_MIN_MS - performance.now())]);
-      else await Promise.all([fonts, introFinished(root), sleep(INTRO_END_MS - performance.now())]);
+      else
+        await Promise.race([
+          Promise.all([fonts, introFinished(root), sleep(INTRO_END_MS - performance.now())]),
+          sleep(INTRO_CAP_MS),
+        ]);
       if (cancelled) return;
       // Development aid: ?preloader=hold keeps the intro on screen to inspect it
       if (process.env.NODE_ENV !== "production" && new URLSearchParams(location.search).get("preloader") === "hold") return;
 
       if (reduce) {
-        await root.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: "ease-out", fill: "forwards" }).finished;
+        const fade = root.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: "ease-out", fill: "forwards" });
+        await Promise.race([fade.finished, sleep(EXIT_CAP_MS)]).catch(() => {});
         return finish();
       }
 
@@ -142,7 +159,7 @@ export function Preloader() {
         easing: "cubic-bezier(0.55, 0, 0.15, 1)",
         fill: "forwards",
       });
-      await Promise.all([fly.finished, open.finished]).catch(() => {});
+      await Promise.race([Promise.all([fly.finished, open.finished]), sleep(EXIT_CAP_MS)]).catch(() => {});
       finish();
     })();
 

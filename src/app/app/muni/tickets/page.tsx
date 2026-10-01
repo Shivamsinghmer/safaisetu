@@ -12,8 +12,8 @@ import { loadMuni } from "../data";
 export const metadata: Metadata = { title: "Complaint queue" };
 
 const PAGE_SIZE = 50;
-type Tab = "new" | "overdue" | "active" | "pickups" | "resolved" | "all";
-const TABS: Tab[] = ["new", "overdue", "active", "pickups", "resolved", "all"];
+type Tab = "new" | "overdue" | "active" | "pickups" | "flagged" | "resolved" | "all";
+const TABS: Tab[] = ["new", "overdue", "active", "pickups", "flagged", "resolved", "all"];
 
 export default async function MuniQueuePage({ searchParams }: PageProps<"/app/muni/tickets">) {
   const sp = (await searchParams) as { tab?: string; ward?: string; page?: string };
@@ -30,6 +30,8 @@ export default async function MuniQueuePage({ searchParams }: PageProps<"/app/mu
     if (t === "overdue") return q.in("status", OPEN_STATUSES).lt("sla_due_at", nowIso);
     if (t === "active") return q.in("status", ["assigned", "in_progress"]);
     if (t === "pickups") return q.eq("kind", "pickup").in("status", OPEN_STATUSES);
+    // Cleanups whose after photo the AI check flagged or couldn't confirm
+    if (t === "flagged") return q.in("status", ["resolved", "closed"]).in("after_check->>verdict", ["review", "fail"]);
     if (t === "resolved") return q.in("status", ["resolved", "closed"]);
     return q;
   };
@@ -37,7 +39,7 @@ export default async function MuniQueuePage({ searchParams }: PageProps<"/app/mu
     return scoped(supabase.from("tickets").select(select, head ? { count: "exact", head: true } : { count: "exact" }).eq("scope", "municipal"));
   }
 
-  const working = tab !== "resolved" && tab !== "all";
+  const working = tab !== "resolved" && tab !== "flagged" && tab !== "all";
   let listQuery = filter(tab, baseQuery(TICKET_LIST_SELECT));
   listQuery = working
     ? listQuery.order("severity", { ascending: false }).order("created_at", { ascending: true })
@@ -76,6 +78,7 @@ export default async function MuniQueuePage({ searchParams }: PageProps<"/app/mu
           { key: "overdue", label: "Past SLA", href: qs("overdue"), count: countOf.overdue },
           { key: "active", label: "In the field", href: qs("active"), count: countOf.active },
           { key: "pickups", label: "Pickups", href: qs("pickups"), count: countOf.pickups },
+          { key: "flagged", label: "Flagged by AI", href: qs("flagged"), count: countOf.flagged },
           { key: "resolved", label: "Resolved", href: qs("resolved"), count: countOf.resolved },
           { key: "all", label: "All", href: qs("all"), count: countOf.all },
         ]}

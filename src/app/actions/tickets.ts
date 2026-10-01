@@ -1,5 +1,6 @@
 "use server";
 
+import { readSignals, runAfterCheck, type PhotoSignals } from "@/lib/after-check";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
@@ -11,7 +12,7 @@ import { LIMITS, TOO_MANY, allow, clientIp } from "@/lib/rate-limit";
 import { PHOTO_BUCKET } from "@/lib/storage";
 import { notifyPickupBatch, notifyTicketCreated, notifyTicketUpdated, type TicketSnapshot } from "@/lib/notify";
 import { publicSiteUrl } from "@/lib/site-url";
-import type { ActionState, TicketStatus } from "@/lib/types";
+import type { ActionState, AfterCheck, TicketStatus } from "@/lib/types";
 
 const aiSchema = z
   .object({
@@ -110,6 +111,25 @@ export async function updateTicketAction(_: ActionState, formData: FormData): Pr
   if (status === "resolved" && !afterPhoto) return { error: "Upload an after photo as proof of cleanup" };
 
   const supabase = await createClient();
+
+  // Resolving needs a checked after photo; a flagged one only goes through with the worker's explanation
+  let flaggedOverride: { check: AfterCheck; reason: string } | null = null;
+  if (status === "resolved" && afterPhoto) {
+    const { data: t } = await supabase
+      .from("tickets")
+      .select("id, lat, lng, photo_path, created_at, after_check")
+      .eq("id", ticketId)
+      .maybeSingle<{ id: string; lat: number; lng: number; photo_path: string | null; created_at: string; after_check: AfterCheck | null }>();
+    if (!t) return { error: "Ticket not found" };
+    const check = t.after_check?.path === afterPhoto ? t.after_check : await runAfterCheck(t, afterPhoto, readSignals(formData));
+    if (check.verdict === "fail") {
+      const reason = String(formData.get("flag_reason") ?? "").trim().slice(0, 400);
+      if (reason.length < 10)
+        return { error: "The photo check flagged this photo. Retake it at the spot, or explain why it is correct." };
+      flaggedOverride = { check, reason };
+    }
+  }
+
   const { data: before } = await supabase
     .from("tickets")
     .select("status, scope, assigned_to, scheduled_for")
@@ -127,6 +147,14 @@ export async function updateTicketAction(_: ActionState, formData: FormData): Pr
   });
   if (error) return { error: error.message };
 
+  // Keep the worker's explanation with the check, for the reporter and the officer
+  if (flaggedOverride) {
+    await createAdminClient()
+      .from("tickets")
+      .update({ after_check: { ...flaggedOverride.check, override: flaggedOverride.reason } })
+      .eq("id", ticketId);
+  }
+
   if (before) {
     const base = await publicSiteUrl();
     after(() => notifyTicketUpdated({ ticketId, before, actorId: viewer.userId, note, base }));
@@ -134,6 +162,40 @@ export async function updateTicketAction(_: ActionState, formData: FormData): Pr
 
   revalidatePath("/app", "layout");
   return { ok: true, message: "Updated." };
+}
+
+/**
+ * Checks a just-uploaded after photo straight away, so the worker sees the result before resolving.
+ * Only someone who can resolve the ticket may run it (the assignee, the org's staff or the municipality).
+ */
+export async function checkAfterPhotoAction(
+  ticketId: string,
+  afterPath: string,
+  signals: PhotoSignals,
+): Promise<{ ok: true; check: AfterCheck } | { ok: false; error: string }> {
+  const viewer = await requireViewer();
+  if (!afterPath.startsWith(`${viewer.userId}/`)) return { ok: false, error: "Invalid photo" };
+  const supabase = await createClient();
+  const { data: t } = await supabase
+    .from("tickets")
+    .select("id, lat, lng, photo_path, created_at, assigned_to, org_id")
+    .eq("id", ticketId)
+    .maybeSingle<{ id: string; lat: number; lng: number; photo_path: string | null; created_at: string; assigned_to: string | null; org_id: string | null }>();
+  if (!t) return { ok: false, error: "Ticket not found" };
+  const canResolve =
+    t.assigned_to === viewer.userId ||
+    viewer.profile.platform_role === "municipal_admin" ||
+    viewer.memberships.some((m) => m.org_id === t.org_id && m.status === "active" && m.role !== "member");
+  if (!canResolve) return { ok: false, error: "Only the person cleaning this up can check its photo" };
+  if (!(await allow(`ai:${viewer.userId}`, LIMITS.ai.max, LIMITS.ai.window))) return { ok: false, error: TOO_MANY };
+  const clean: PhotoSignals = {
+    lat: Number.isFinite(signals.lat) ? signals.lat : undefined,
+    lng: Number.isFinite(signals.lng) ? signals.lng : undefined,
+    accuracy: Number.isFinite(signals.accuracy) ? signals.accuracy : undefined,
+    takenAt: Number.isFinite(signals.takenAt) ? signals.takenAt : undefined,
+    hash: signals.hash && /^[0-9a-f]{16}$/.test(signals.hash) ? signals.hash : undefined,
+  };
+  return { ok: true, check: await runAfterCheck(t, afterPath, clean) };
 }
 
 /** Org admin: send all pending pickup requests to the municipality as one batch */

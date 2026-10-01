@@ -1,7 +1,7 @@
-import type { Severity, TicketKind, TicketScope, TicketStatus } from "./types";
+import type { AfterCheck, Severity, TicketKind, TicketScope, TicketStatus } from "./types";
 
 export const TICKET_LIST_SELECT =
-  "id, code, kind, category, status, severity, scope, address, unit_label, created_at, updated_at, sla_due_at, escalated, source, lat, lng, org_id, ward_id, assigned_to, photo_path, after_photo_path, rating, org:organizations(name, type), ward:wards(name, code)";
+  "id, code, kind, category, status, severity, scope, address, unit_label, created_at, updated_at, sla_due_at, escalated, source, lat, lng, org_id, ward_id, assigned_to, photo_path, after_photo_path, rating, after_check, org:organizations(name, type), ward:wards(name, code)";
 
 export interface TicketListRow {
   id: string;
@@ -26,6 +26,7 @@ export interface TicketListRow {
   photo_path: string | null;
   after_photo_path: string | null;
   rating: number | null;
+  after_check: AfterCheck | null;
   org: { name: string; type: string } | null;
   ward: { name: string; code: string } | null;
 }

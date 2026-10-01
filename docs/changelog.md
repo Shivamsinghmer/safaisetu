@@ -5,6 +5,16 @@ Newest first. Add an entry under **Unreleased** with every change, and move it u
 ## Unreleased
 _Nothing yet._
 
+## 2026-10-01 — AI after-photo check
+- AI checks every after photo before a ticket can be resolved: same place as the report (permanent features),
+  actually cleaned, not the reported photo re-used, not a screen photo, not AI-generated or edited; plus the
+  device's distance from the pin, whether the photo predates the assignment, and whether the same photo was already
+  used on another ticket. Verdicts (verified / needs review / flagged) are server-written only (migration
+  `20261001170000_after_photo_check.sql`); a flagged photo needs the worker's explanation. Shown to the worker at
+  upload, to reporters and officers on the ticket and in lists, and in a "Flagged by AI" queue tab.
+- Preloader never locks the page: tabs opened in the background skip it, and the intro and exit waits are capped
+  (4s / 1.4s) because hidden or throttled tabs don't advance animations.
+
 ## 2026-10-01 — Preloader
 - A 2.5s first-load preloader, built entirely in code (SVG + CSS keyframes + Web Animations): waste fragments in the
   four bin colours swirl into the new mark, the check draws itself and the leaf grows, then the mark flies onto the

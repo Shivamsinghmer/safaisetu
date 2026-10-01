@@ -13,6 +13,7 @@ import type { Organization, Ticket, TicketEvent } from "@/lib/types";
 import { cn, formatDate, formatHours, hoursBetween, isOverdue, timeAgo } from "@/lib/utils";
 import { TicketActions } from "./ticket-actions";
 import { ApprovalChip } from "@/components/proof";
+import { AfterCheckDetails, checkFor } from "@/components/after-check";
 import { WorkerNavigator, WorkerTracker, type WorkerLocationRow } from "./live-tracking";
 import { getT } from "@/lib/i18n-server";
 import { categoryText } from "@/lib/i18n";
@@ -384,6 +385,13 @@ function ProofPanel({
         <ProofPhoto src={before} label={t("Before")} when={ticket.created_at} empty={t("No photo")} />
         <ProofPhoto src={after} label={t("After")} when={ticket.resolved_at ?? ticket.updated_at} good />
       </div>
+      {checkFor(ticket.after_check, ticket.after_photo_path) && (
+        <AfterCheckDetails
+          check={checkFor(ticket.after_check, ticket.after_photo_path)!}
+          t={t}
+          className="border-t border-bone px-5 py-4"
+        />
+      )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-bone px-5 py-3.5 text-sm">
         {ticket.status === "resolved" && viewerIsReporter && (
           <>
