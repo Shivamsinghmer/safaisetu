@@ -5,7 +5,7 @@ import { MARK_BG, MARK_CHECK, MARK_LEAF, MARK_LEAF_FILL, MARK_VEIN } from "@/lib
 /** The SafaiSetu mark (geometry in lib/brand-mark.ts) */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={cn("h-8 w-8 shrink-0", className)} aria-hidden>
+    <svg viewBox="0 0 32 32" className={cn("h-8 w-8 shrink-0", className)} aria-hidden data-brand-mark="">
       <rect width="32" height="32" rx="9.5" fill={MARK_BG} />
       <rect x="0.5" y="0.5" width="31" height="31" rx="9" fill="none" stroke="#ffffff" strokeOpacity="0.14" />
       <path d={MARK_CHECK} fill="none" stroke="#ffffff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />

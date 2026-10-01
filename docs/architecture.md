@@ -197,6 +197,14 @@ the mock app screens inside the landing visuals, are English only.
 `/scorecard` lists every ward's open, overdue and 30-day resolved counts, average fix time and citizen rating, from
 `public_ward_scorecard()`. No tickets or people are shown. Linked from the landing footer.
 
+## Preloader
+`<Preloader />` sits at the top of `<body>` in the root layout, outside the view-transition wrapper, so it mounts once
+per full load. An inline script in `<head>` sets `html[data-preloader]` before paint: `"on"` the first time in a tab
+(remembered in `sessionStorage` as `ss-preloaded`), `"skip"` afterwards; without JavaScript the overlay never shows.
+`?preloader=replay` forces it (handy for demos) and, in development, `?preloader=hold` freezes it before the exit.
+While it is up the page (`#app-root`) is `inert` and the document can't scroll; a CSS failsafe hides the overlay and
+restores scrolling after 6s whatever happens to the script.
+
 ## PWA
 - `src/app/manifest.ts`:
   - `start_url` and `id` are `/app`, with standalone display and portrait orientation.

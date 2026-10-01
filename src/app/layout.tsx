@@ -4,6 +4,7 @@ import { ViewTransition } from "react";
 import "./globals.css";
 import { InlineScript } from "@/components/inline-script";
 import { PAGE_NAV } from "@/components/nav-link";
+import { Preloader } from "@/components/preloader";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,6 +44,10 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// Preloader: first load per tab only. Decided before paint so it never flashes on later loads.
+// "?preloader=replay" shows it again (demos); "?preloader=hold" also freezes it before the exit in development.
+const PRELOADER_SCRIPT = `try{var h=document.documentElement,f=/[?&]preloader=(replay|hold)/.test(location.search);h.setAttribute("data-preloader",f||!sessionStorage.getItem("ss-preloaded")?"on":"skip")}catch(e){}`;
+
 const THEME_SCRIPT = `try{var t=localStorage.getItem("safaisetu-theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -55,12 +60,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {/* Apply the saved (or system) theme before first paint to avoid a flash */}
         <InlineScript html={THEME_SCRIPT} />
+        <InlineScript html={PRELOADER_SCRIPT} />
       </head>
       <body className="min-h-full">
+        <Preloader />
         {/* Page navigations (Links tagged "page-nav", see components/nav-link) blur between pages (globals.css).
             Other transitions (live refreshes, server-action revalidations) update without animating. */}
         <ViewTransition default={{ [PAGE_NAV]: "page-blur", default: "none" }}>
-          <div className="min-h-full">{children}</div>
+          <div id="app-root" className="min-h-full">
+            {children}
+          </div>
         </ViewTransition>
       </body>
     </html>

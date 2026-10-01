@@ -5,6 +5,12 @@ Newest first. Add an entry under **Unreleased** with every change, and move it u
 ## Unreleased
 _Nothing yet._
 
+## 2026-10-01 — Preloader
+- A 2.5s first-load preloader, built entirely in code (SVG + CSS keyframes + Web Animations): waste fragments in the
+  four bin colours swirl into the new mark, the check draws itself and the leaf grows, then the mark flies onto the
+  nav logo while the page opens in a circle around it. Once per tab, reduced-motion aware, no-JS safe, with a 6s
+  failsafe; `?preloader=replay` shows it again.
+
 ## 2026-10-01 — Proof of cleanup everywhere
 - Before and after photos and the reporter's approval are shown everywhere, not just the status: a "Proof of
   cleanup" panel on the ticket page (side-by-side photos, approval state, jump to approve/reopen), thumbnails and an

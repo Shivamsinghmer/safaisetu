@@ -55,6 +55,14 @@ resolved = mint + night · closed = emerald ring · reopened = pink + snow · re
 - 4px spacing base (Tailwind default). Page max width 1200px; landing sections are one viewport tall each.
 
 ## Motion
+- **Preloader** (`src/components/preloader.tsx`, styles under "Preloader" in `globals.css`): first full load per tab,
+  2.5s. Sixteen waste fragments in the four bin colours pop in on a ring, pull back, then swirl into the centre and are
+  absorbed as the deep-green square springs in (with a soft brand ripple); the white check draws itself, the lime leaf
+  grows from its tip with a slight overshoot and "SafaiSetu" fades up beneath (1.48s). Then the mark flies onto the
+  nav logo (any visible `[data-brand-mark]`, 720ms) while the page opens as a circle around the landing point (a
+  registered `--pl-r` radial mask, 260–1020ms), so the overlay mark and the real logo line up exactly. The intro is
+  pure CSS from first paint; the exit waits for those animations to finish, not the clock. If the page's JavaScript
+  is slow, a short arc orbits the mark and the leaf breathes. Reduced motion: the static mark, then a 200ms fade.
 - **Page transitions:** "Blur". The old page blurs (12px), fades and scales to 1.02 while the new page sharpens in
   from 0.98 (500ms, ease-in-out). It's built on React's `<ViewTransition default="page-blur">` in the root layout, so it
   runs on every App Router navigation through the browser View Transitions API. Keyframes `blur-out` / `blur-in` live
