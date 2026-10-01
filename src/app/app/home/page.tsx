@@ -9,12 +9,14 @@ import { createClient } from "@/lib/supabase/server";
 import { OPEN_STATUSES, ORG_TYPE_META } from "@/lib/constants";
 import { TICKET_LIST_SELECT, type TicketListRow } from "@/lib/tickets";
 import type { Notice } from "@/lib/types";
+import { getT } from "@/lib/i18n-server";
 
 export const metadata: Metadata = { title: "Home" };
 
 export default async function HomePage() {
   const viewer = await requireViewer();
   const supabase = await createClient();
+  const { t } = await getT();
   const [{ data: tickets }, { data: notices }] = await Promise.all([
     supabase
       .from("tickets")
@@ -33,17 +35,17 @@ export default async function HomePage() {
   return (
     <>
       <div className="mb-8 animate-rise">
-        <div className="label-mono mb-2">Home</div>
+        <div className="label-mono mb-2">{t("Home")}</div>
         <h1 className="font-display text-[28px] leading-[1.1] font-bold tracking-[-0.04em] sm:text-[32px] md:text-heading">
-          Namaste, {firstName}.
+          {t("Namaste, {name}.", { name: firstName })}
         </h1>
         <p className="mt-2 text-[15px] text-slate">
-          {open ? `You have ${open} open ticket${open === 1 ? "" : "s"}.` : "Nothing pending. Your area looks good."}
+          {open ? t("You have {n} open ticket(s).", { n: open }) : t("Nothing pending. Your area looks good.")}
           {toConfirm.length > 0 && (
             <>
               {" "}
               <Link href="/app/tickets?tab=review" className="font-semibold text-blue">
-                {toConfirm.length} need your confirmation →
+                {t("{n} need your confirmation →", { n: toConfirm.length })}
               </Link>
             </>
           )}
@@ -51,18 +53,18 @@ export default async function HomePage() {
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <QuickAction href="/app/report" icon={<Camera className="h-5 w-5" />} title="Report an issue" text="Overflowing bin, garbage on road, dumping" primary />
-        <QuickAction href="/app/pickup" icon={<Truck className="h-5 w-5" />} title="Request pickup" text="Bulky items, e-waste, debris" />
-        <QuickAction href="/app/learn" icon={<BookOpen className="h-5 w-5" />} title="Which bin?" text="Snap an item, AI tells you where it goes" />
-        <QuickAction href="/app/orgs" icon={<UserPlus className="h-5 w-5" />} title="Join your society" text="Use an invite code or register yours" />
+        <QuickAction href="/app/report" icon={<Camera className="h-5 w-5" />} title={t("Report an issue")} text={t("Overflowing bin, garbage on road, dumping")} primary />
+        <QuickAction href="/app/pickup" icon={<Truck className="h-5 w-5" />} title={t("Request pickup")} text={t("Bulky items, e-waste, debris")} />
+        <QuickAction href="/app/learn" icon={<BookOpen className="h-5 w-5" />} title={t("Which bin?")} text={t("Snap an item, AI tells you where it goes")} />
+        <QuickAction href="/app/orgs" icon={<UserPlus className="h-5 w-5" />} title={t("Join your society")} text={t("Use an invite code or register yours")} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold tracking-[-0.02em]">Recent activity</h2>
+            <h2 className="font-display text-lg font-bold tracking-[-0.02em]">{t("Recent activity")}</h2>
             <Link href="/app/tickets" className="inline-flex items-center gap-1 text-sm font-semibold text-blue">
-              All tickets <ArrowRight className="h-3.5 w-3.5" />
+              {t("All tickets")} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           {mine.length ? (
@@ -70,10 +72,10 @@ export default async function HomePage() {
           ) : (
             <Card className="flex flex-col items-center px-6 py-10 text-center">
               <Clock className="h-7 w-7 text-fog" />
-              <div className="mt-3 font-display font-bold">No reports yet</div>
-              <p className="mt-1 max-w-xs text-sm text-slate">Your reports and pickup requests show up here with live status.</p>
+              <div className="mt-3 font-display font-bold">{t("No reports yet")}</div>
+              <p className="mt-1 max-w-xs text-sm text-slate">{t("Your reports and pickup requests show up here with live status.")}</p>
               <ButtonLink href="/app/report" className="mt-5">
-                Report your first issue
+                {t("Report your first issue")}
               </ButtonLink>
             </Card>
           )}
@@ -81,7 +83,7 @@ export default async function HomePage() {
 
         <div className="flex flex-col gap-6">
           <Card>
-            <CardHeader label="Your places" title="Societies & campuses" />
+            <CardHeader label={t("Your places")} title={t("Societies & campuses")} />
             {viewer.memberships.length ? (
               <ul className="divide-y divide-bone">
                 {viewer.memberships.map((m) => (
@@ -97,7 +99,7 @@ export default async function HomePage() {
                           {m.unit_label && ` · ${m.unit_label}`}
                         </div>
                       </div>
-                      {m.status === "pending" && <Pill className="bg-amber/15 text-amber">Awaiting approval</Pill>}
+                      {m.status === "pending" && <Pill className="bg-amber/15 text-amber">{t("Awaiting approval")}</Pill>}
                       {m.role === "admin" && <Pill className="bg-violet/10 text-violet">Admin</Pill>}
                     </Link>
                   </li>
@@ -105,16 +107,16 @@ export default async function HomePage() {
               </ul>
             ) : (
               <div className="px-5 py-5 text-sm text-slate">
-                Not part of a society or campus yet.{" "}
+                {t("Not part of a society or campus yet.")}{" "}
                 <Link href="/app/orgs" className="font-semibold text-blue">
-                  Join or register one →
+                  {t("Join or register one →")}
                 </Link>
               </div>
             )}
           </Card>
 
           <Card>
-            <CardHeader label="Notices" title="From your society & city" />
+            <CardHeader label={t("Notices")} title={t("From your society & city")} />
             <NoticeList
               notices={(notices ?? []) as Notice[]}
               sourceName={(n) => (n.org_id ? (orgName.get(n.org_id) ?? "Your organization") : "Municipality")}

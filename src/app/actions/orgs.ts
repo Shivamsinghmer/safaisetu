@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -9,6 +10,8 @@ import { requireViewer } from "@/lib/session";
 import { sendInviteEmail } from "@/lib/email";
 import { ORG_TYPE_META } from "@/lib/constants";
 import { publicSiteUrl } from "@/lib/site-url";
+import { LIMITS, TOO_MANY, allow } from "@/lib/rate-limit";
+import { notifyJoinRequest, notifyMemberApproved, notifyNotice, notifyOrgRegistered, notifyOrgReviewed } from "@/lib/notify";
 import type { ActionState, OrgType } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
@@ -59,12 +62,14 @@ export async function registerOrgAction(_: ActionState, formData: FormData): Pro
     .select("id")
     .single();
   if (error) return { error: error.message };
+  const base = await publicSiteUrl();
+  after(() => notifyOrgRegistered(data.id, viewer.userId, base));
   revalidatePath("/app", "layout");
   redirect(`/app/org/${data.id}?registered=1`);
 }
 
 export async function reviewOrgAction(formData: FormData) {
-  await requireViewer();
+  const viewer = await requireViewer();
   const orgId = String(formData.get("org_id"));
   const decision = formData.get("decision") === "approve" ? "approved" : "rejected";
   const reason = String(formData.get("reason") ?? "").trim() || null;
@@ -75,6 +80,8 @@ export async function reviewOrgAction(formData: FormData) {
     .update({ status: decision, rejection_reason: decision === "rejected" ? reason : null })
     .eq("id", orgId);
   if (error) throw new Error(error.message);
+  const base = await publicSiteUrl();
+  after(() => notifyOrgReviewed(orgId, viewer.userId, base));
   revalidatePath("/app", "layout");
 }
 
@@ -107,6 +114,10 @@ export async function joinByCodeAction(_: ActionState, formData: FormData): Prom
     .upsert({ org_id: org.id, user_id: viewer.userId, role: "member", status, unit_label: unit }, { onConflict: "org_id,user_id" });
   if (error) return { error: error.message };
 
+  if (status === "pending") {
+    const base = await publicSiteUrl();
+    after(() => notifyJoinRequest(org.id, viewer.userId, base));
+  }
   revalidatePath("/app", "layout");
   if (status === "active") redirect(`/app/org/${org.id}?welcome=1`);
   return { message: `Request sent. The ${ORG_TYPE_META[org.type as OrgType].admin.toLowerCase()} of ${org.name} will approve it.` };
@@ -148,6 +159,7 @@ export async function inviteMembersAction(_: ActionState, formData: FormData): P
     .filter(Boolean);
   if (!lines.length) return { error: "Add at least one email" };
   if (lines.length > 200) return { error: "Invite at most 200 people at a time" };
+  if (!(await allow(`invite:${viewer.userId}`, LIMITS.invite.max, LIMITS.invite.window))) return { error: TOO_MANY };
 
   const rows: { email: string; unit_label: string | null }[] = [];
   for (const line of lines) {
@@ -190,13 +202,19 @@ export async function inviteMembersAction(_: ActionState, formData: FormData): P
 }
 
 export async function decideMemberAction(formData: FormData) {
-  await requireViewer();
+  const viewer = await requireViewer();
   const id = String(formData.get("membership_id"));
   const orgId = String(formData.get("org_id"));
   const decision = String(formData.get("decision"));
   const supabase = await createClient();
 
-  if (decision === "approve") await supabase.from("memberships").update({ status: "active" }).eq("id", id);
+  if (decision === "approve") {
+    const { error } = await supabase.from("memberships").update({ status: "active" }).eq("id", id);
+    if (!error) {
+      const base = await publicSiteUrl();
+      after(() => notifyMemberApproved(id, viewer.userId, base));
+    }
+  }
   else if (decision === "remove") await supabase.from("memberships").delete().eq("id", id);
   else if (decision === "make_staff") await supabase.from("memberships").update({ role: "staff" }).eq("id", id);
   else if (decision === "make_member") await supabase.from("memberships").update({ role: "member" }).eq("id", id);
@@ -225,13 +243,19 @@ export async function postNoticeAction(_: ActionState, formData: FormData): Prom
   const orgId = formData.get("org_id") ? String(formData.get("org_id")) : null;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("notices").insert({
-    ...parsed.data,
-    org_id: orgId,
-    municipality_id: orgId ? null : viewer.profile.municipality_id,
-    author_id: viewer.userId,
-  });
+  const { data: notice, error } = await supabase
+    .from("notices")
+    .insert({
+      ...parsed.data,
+      org_id: orgId,
+      municipality_id: orgId ? null : viewer.profile.municipality_id,
+      author_id: viewer.userId,
+    })
+    .select("id")
+    .single();
   if (error) return { error: error.message };
+  const base = await publicSiteUrl();
+  after(() => notifyNotice(notice.id, viewer.userId, base));
   revalidatePath(orgId ? `/app/org/${orgId}` : "/app/muni", "layout");
   return { ok: true, message: "Notice published." };
 }

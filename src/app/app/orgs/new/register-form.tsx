@@ -60,7 +60,7 @@ export function RegisterOrgForm({ userId }: { userId: string }) {
             id="name"
             name="name"
             required
-            placeholder={type === "society" ? "Green Valley Residency" : type === "college" ? "Institute of Technology, Bhopal" : "New Market Traders' Association"}
+            placeholder={type === "society" ? "Green Valley Residency" : type === "college" ? "Institute of Technology, Kanpur" : "New Market Traders' Association"}
           />
         </Field>
 

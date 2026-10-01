@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { LayoutGroup, motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n-provider";
 
 const LINKS = [
   { id: "flow", label: "How it works" },
@@ -15,6 +16,7 @@ const LINKS = [
  * and otherwise rests on the section currently in view. Clicks scroll smoothly.
  */
 export function LandingNav() {
+  const { t } = useT();
   const [hovered, setHovered] = useState<string | null>(null);
   const [inView, setInView] = useState<string | null>(null);
 
@@ -67,7 +69,7 @@ export function LandingNav() {
                   transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }}
                 />
               )}
-              {l.label}
+              {t(l.label)}
             </a>
           );
         })}

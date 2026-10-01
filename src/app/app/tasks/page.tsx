@@ -9,6 +9,7 @@ import { requireViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { categoryLabel } from "@/lib/constants";
 import { TICKET_LIST_SELECT, type TicketListRow } from "@/lib/tickets";
+import { getT } from "@/lib/i18n-server";
 
 export const metadata: Metadata = { title: "My tasks" };
 
@@ -16,6 +17,7 @@ export default async function TasksPage() {
   const viewer = await requireViewer();
   if (viewer.profile.platform_role !== "worker") notFound();
   const supabase = await createClient();
+  const { t } = await getT();
   const { data } = await supabase
     .from("tickets")
     .select(TICKET_LIST_SELECT)
@@ -32,17 +34,17 @@ export default async function TasksPage() {
   return (
     <>
       <LiveRefresh channel={`tasks-${viewer.userId}`} filter={`assigned_to=eq.${viewer.userId}`} />
-      <PageHeader label="Field work" title="My tasks" description="Open a task, go to the pin, clean up, and upload an after photo as proof." />
+      <PageHeader label={t("Field work")} title={t("My tasks")} description={t("Open a task, go to the pin, clean up, and upload an after photo as proof.")} />
       <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
-        <StatCard compact label="To do" value={active.filter((t) => t.status === "assigned").length} />
-        <StatCard compact label="In progress" value={active.filter((t) => t.status === "in_progress").length} />
-        <StatCard compact label="Done today" value={doneToday} tone="good" />
+        <StatCard compact label={t("To do")} value={active.filter((t) => t.status === "assigned").length} />
+        <StatCard compact label={t("In progress")} value={active.filter((t) => t.status === "in_progress").length} />
+        <StatCard compact label={t("Done today")} value={doneToday} tone="good" />
       </div>
       {active.length ? (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
           <TicketList tickets={active} showWard />
           <Card className="self-start overflow-hidden">
-            <CardHeader label="Route" title="Today's stops" />
+            <CardHeader label={t("Route")} title={t("Today's stops")} />
             <OverviewMap
               height={360}
               tickets={active.map((t) => ({ id: t.id, code: t.code, lat: t.lat, lng: t.lng, status: t.status, label: categoryLabel(t.category) }))}
@@ -50,7 +52,7 @@ export default async function TasksPage() {
           </Card>
         </div>
       ) : (
-        <EmptyState icon={<ListChecks className="h-8 w-8" />} title="No tasks assigned" description="New assignments appear here instantly." />
+        <EmptyState icon={<ListChecks className="h-8 w-8" />} title={t("No tasks assigned")} description={t("New assignments appear here instantly.")} />
       )}
     </>
   );

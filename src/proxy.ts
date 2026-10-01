@@ -27,7 +27,7 @@ export async function proxy(request: NextRequest) {
   const signedIn = Boolean(data?.claims?.sub);
   const { pathname, search } = request.nextUrl;
 
-  if (!signedIn && (pathname === "/app" || pathname.startsWith("/app/") || pathname.startsWith("/r/"))) {
+  if (!signedIn && (pathname === "/app" || pathname.startsWith("/app/"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = `?next=${encodeURIComponent(pathname + search)}`;

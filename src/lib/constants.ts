@@ -20,12 +20,12 @@ export const PICKUP_TYPES = [
   { value: "hazardous", label: "Hazardous waste", hint: "Paint, chemicals, medical waste" },
 ] as const;
 
-const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+export const CATEGORY_LABELS_EN: Record<string, string> = Object.fromEntries(
   [...ISSUE_CATEGORIES, ...PICKUP_TYPES].map((c) => [c.value, c.label]),
 );
 
 export function categoryLabel(value: string) {
-  return CATEGORY_LABELS[value] ?? value.replaceAll("_", " ");
+  return CATEGORY_LABELS_EN[value] ?? value.replaceAll("_", " ");
 }
 
 export const STATUS_META: Record<TicketStatus, { label: string; className: string; dot: string }> = {

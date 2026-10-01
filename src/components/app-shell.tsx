@@ -18,6 +18,7 @@ import {
   PlusCircle,
   QrCode,
   Recycle,
+  Settings,
   Truck,
   Users,
   X,
@@ -29,6 +30,8 @@ import { Avatar } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/notification-bell";
+import { useT } from "@/components/i18n-provider";
 
 const ICONS = {
   home: Home,
@@ -47,6 +50,7 @@ const ICONS = {
   join: UserPlus,
   bell: Bell,
   recycle: Recycle,
+  settings: Settings,
 } as const;
 
 export type IconName = keyof typeof ICONS;
@@ -125,6 +129,7 @@ function NavList({ sections, onNavigate }: { sections: NavSection[]; onNavigate?
 }
 
 function UserBlock({ name, roleLabel }: { name: string; roleLabel: string }) {
+  const { t } = useT();
   return (
     <div className="flex items-center gap-2.5 rounded-xl border border-bone bg-card p-2.5">
       <Avatar name={name} />
@@ -136,8 +141,8 @@ function UserBlock({ name, roleLabel }: { name: string; roleLabel: string }) {
       <form action={signOutAction}>
         <button
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-slate hover:bg-black/4 hover:text-ink"
-          aria-label="Sign out"
-          title="Sign out"
+          aria-label={t("Sign out")}
+          title={t("Sign out")}
         >
           <LogOut className="h-4 w-4" />
         </button>
@@ -151,14 +156,19 @@ export function AppShell({
   mobileTabs,
   name,
   roleLabel,
+  userId,
+  unread,
   children,
 }: {
   sections: NavSection[];
   mobileTabs: NavItem[];
   name: string;
   roleLabel: string;
+  userId: string;
+  unread: number;
   children: ReactNode;
 }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -166,10 +176,13 @@ export function AppShell({
     <div className="min-h-dvh bg-mist">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] print:!hidden flex-col border-r border-bone bg-card lg:flex">
-        <Link href="/app" className="flex h-16 items-center gap-2 px-5">
-          <LogoMark />
-          <span className="font-display text-[17px] font-extrabold tracking-[-0.03em] text-onyx">SafaiSetu</span>
-        </Link>
+        <div className="flex h-16 items-center justify-between pr-3 pl-5">
+          <Link href="/app" className="flex items-center gap-2">
+            <LogoMark />
+            <span className="font-display text-[17px] font-extrabold tracking-[-0.03em] text-onyx">SafaiSetu</span>
+          </Link>
+          <NotificationBell key={unread} userId={userId} initial={unread} />
+        </div>
         <div className="flex-1 overflow-y-auto px-3 pt-2 pb-4">
           <NavList sections={sections} />
         </div>
@@ -185,11 +198,12 @@ export function AppShell({
           <span className="font-display text-base font-extrabold tracking-[-0.03em] text-onyx">SafaiSetu</span>
         </Link>
         <div className="flex items-center gap-1">
+          <NotificationBell key={unread} userId={userId} initial={unread} />
           <ThemeToggle />
           <button
             onClick={() => setOpen(true)}
             className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full hover:bg-black/4"
-            aria-label="Open menu"
+            aria-label={t("Open menu")}
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -202,11 +216,11 @@ export function AppShell({
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 right-0 flex w-[82%] max-w-sm animate-rise flex-col bg-card">
             <div className="flex h-[calc(3.5rem+env(safe-area-inset-top,0px))] items-center justify-between border-b border-bone px-4 pt-[env(safe-area-inset-top,0px)]">
-              <span className="label-mono">Menu</span>
+              <span className="label-mono">{t("Menu")}</span>
               <button
                 onClick={() => setOpen(false)}
                 className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full hover:bg-black/4"
-                aria-label="Close menu"
+                aria-label={t("Close menu")}
               >
                 <X className="h-5 w-5" />
               </button>

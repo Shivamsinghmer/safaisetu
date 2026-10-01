@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getT } from "@/lib/i18n-server";
 import { PageHeader } from "@/components/ui";
 import { requireViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -8,6 +9,7 @@ import { ReportForm, type ReportOrg, type ReportQr } from "./report-form";
 export const metadata: Metadata = { title: "Report an issue" };
 
 export default async function ReportPage({ searchParams }: PageProps<"/app/report">) {
+  const { t } = await getT();
   const { qr: qrId, org: orgId } = (await searchParams) as { qr?: string; org?: string };
   const viewer = await requireViewer();
 
@@ -40,9 +42,9 @@ export default async function ReportPage({ searchParams }: PageProps<"/app/repor
   return (
     <>
       <PageHeader
-        label={qr ? `QR report · ${qr.org.name}` : "New report"}
-        title="Report a waste issue"
-        description="Snap a photo. AI suggests the category and severity, and your report goes straight to whoever is responsible."
+        label={qr ? `QR report · ${qr.org.name}` : t("New report")}
+        title={t("Report a waste issue")}
+        description={t("Snap a photo. AI suggests the category and severity, and your report goes straight to whoever is responsible.")}
       />
       <ReportForm userId={viewer.userId} orgs={orgs} qr={qr} defaultOrgId={orgs.some((o) => o.id === orgId) ? orgId : undefined} />
     </>

@@ -29,6 +29,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <SignInForm next={next} />
       </div>
 
+      {error === "session" && (
+        <p className="mt-4 rounded-md border border-amber/30 bg-amber/10 px-3 py-2 text-xs text-ink">
+          Your session had ended. Please sign in again.
+        </p>
+      )}
       {error === "demo" && (
         <p className="mt-4 rounded-md border border-coral/30 bg-coral/5 px-3 py-2 text-xs text-coral">
           Demo accounts aren&apos;t set up yet. Run{" "}
@@ -37,16 +42,18 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       )}
 
       {/* Wide screens show the demo roles in the brand panel instead (see ../layout.tsx) */}
-      <div className="2xl:hidden">
-        <div className="mt-6 flex items-center gap-3 tight:mt-5" aria-hidden>
-          <span className="h-px flex-1 bg-bone" />
-          <span className="label-mono">or</span>
-          <span className="h-px flex-1 bg-bone" />
+      {process.env.DEMO_LOGIN !== "off" && (
+        <div className="2xl:hidden">
+          <div className="mt-6 flex items-center gap-3 tight:mt-5" aria-hidden>
+            <span className="h-px flex-1 bg-bone" />
+            <span className="label-mono">or</span>
+            <span className="h-px flex-1 bg-bone" />
+          </div>
+          <div className="mt-6 tight:mt-5">
+            <DemoRolesTiles next={next} />
+          </div>
         </div>
-        <div className="mt-6 tight:mt-5">
-          <DemoRolesTiles next={next} />
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -14,11 +14,15 @@
 | `RESEND_API_KEY`, `MAIL_FROM` | For invitation emails |
 | `NEXT_PUBLIC_SITE_URL` | The production URL, e.g. `https://safaisetu.vercel.app`, with no trailing slash. Used in QR codes and invite links. If it is unset or points at localhost, the request host is used instead. Set it to your custom domain so printed codes never change |
 | `DEMO_PASSWORD` | The same password used when seeding demo accounts |
+| `DEMO_LOGIN` | Optional. Set to `off` to hide the one-click demo accounts and refuse demo sign-ins (for a real deployment) |
 
 3. Deploy. Environment variable changes only take effect after a **redeploy**.
 
 ## Supabase
 - Apply the migrations with `npx supabase link --project-ref <ref>` and then `npx supabase db push`.
+  The migrations enable `pg_cron` and schedule the 15-minute auto-escalation job.
+- Reset the demo data at any time with `npm run demo:reset` (removes previous demo users and their data, including the
+  old Bhopal demo city, and recreates Kanpur).
 - Authentication → URL Configuration: set the **Site URL** to the production URL and add it to the redirect URLs.
 - Authentication → Providers → Email: turn off "Confirm email" for demos, or set up Resend as custom SMTP.
 - Run `npm run seed` once against the target project for the demo data.
@@ -30,6 +34,12 @@ npm run typecheck
 ```bash
 npm run lint
 ```
+```bash
+npm run test:db
+```
+`test:db` runs the pgTAP tests against the linked hosted project through `supabase db query`, so it needs no Docker.
+Each file runs in one transaction that is rolled back. With Docker running, `npm run test:db:local` runs them on a
+local database instead, and CI does that on every push.
 ```bash
 npm run build
 ```

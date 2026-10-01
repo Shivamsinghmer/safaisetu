@@ -2,6 +2,8 @@ import { AppShell, type NavItem, type NavSection } from "@/components/app-shell"
 import { requireViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { ORG_TYPE_META, OPEN_STATUSES } from "@/lib/constants";
+import { getT } from "@/lib/i18n-server";
+import { I18nProvider } from "@/components/i18n-provider";
 
 const ROLE_LABELS = {
   citizen: "Citizen",
@@ -13,6 +15,11 @@ const ROLE_LABELS = {
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const viewer = await requireViewer();
   const supabase = await createClient();
+  const { t, locale } = await getT();
+  const { count: unread } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .is("read_at", null);
   const role = viewer.profile.platform_role;
   const sections: NavSection[] = [];
   let mobileTabs: NavItem[] = [];
@@ -65,6 +72,8 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
       { href: "/app/tickets", label: "My tickets", icon: "tickets" },
       { href: "/app/learn", label: "Waste guide", icon: "learn" },
       { href: "/app/orgs", label: "Join or register", icon: "join" },
+      { href: "/app/notifications", label: "Notifications", icon: "bell", badge: unread ?? 0 },
+      { href: "/app/settings", label: "Settings", icon: "settings" },
     ],
   });
 
@@ -118,20 +127,29 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           ];
   }
 
+  // Translate navigation labels (English text is the key; organization names pass through)
+  const tr = (item: NavItem): NavItem => ({ ...item, label: t(item.label) });
+  const translated = sections.map((sec) => ({ ...sec, title: t(sec.title), items: sec.items.map(tr) }));
+  mobileTabs = mobileTabs.map(tr);
+
   const adminOf = activeMemberships.find((m) => m.role === "admin");
   const roleLabel =
     role === "citizen" && adminOf
       ? `${ORG_TYPE_META[adminOf.organization.type].admin}`
-      : ROLE_LABELS[role];
+      : t(ROLE_LABELS[role]);
 
   return (
-    <AppShell
-      sections={sections}
-      mobileTabs={mobileTabs}
-      name={viewer.profile.full_name || viewer.email}
-      roleLabel={roleLabel}
-    >
-      {children}
-    </AppShell>
+    <I18nProvider locale={locale}>
+      <AppShell
+        sections={translated}
+        mobileTabs={mobileTabs}
+        name={viewer.profile.full_name || viewer.email}
+        roleLabel={roleLabel}
+        userId={viewer.userId}
+        unread={unread ?? 0}
+      >
+        {children}
+      </AppShell>
+    </I18nProvider>
   );
 }

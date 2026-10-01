@@ -49,7 +49,10 @@ const DEMOS = [
 ] as const;
 
 /** Brand-panel version: always-dark surface, full rows with descriptions. */
+const demoEnabled = () => process.env.DEMO_LOGIN !== "off";
+
 export function DemoRolesPanel() {
+  if (!demoEnabled()) return null;
   return (
     <section
       aria-labelledby="demo-panel-heading"
@@ -108,6 +111,7 @@ export function DemoRolesPanel() {
  * show DemoRolesPanel in the brand panel instead (see (auth)/layout.tsx).
  */
 export function DemoRolesTiles({ next }: { next?: string }) {
+  if (!demoEnabled()) return null;
   return (
     <section
       className="rounded-2xl border border-bone bg-mist/60 p-4"

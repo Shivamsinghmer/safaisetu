@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { MousePointer2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n-provider";
 
 function SceneSkeleton() {
   return (
@@ -28,6 +29,7 @@ function subscribeReduce(cb: () => void) {
  * sanitation workers and segregated bins. Renders only while on screen.
  */
 export function CityScene({ className }: { className?: string }) {
+  const { t, locale } = useT();
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const reduced = useSyncExternalStore(subscribeReduce, () => window.matchMedia(REDUCE).matches, () => false);
@@ -42,9 +44,9 @@ export function CityScene({ className }: { className?: string }) {
 
   return (
     <div ref={ref} className={cn("relative", className)}>
-      <Scene active={inView} reduced={reduced} />
+      <Scene active={inView} reduced={reduced} locale={locale} />
       <div className="pointer-events-none absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/85 px-3 py-1 text-[12px] text-muted-foreground backdrop-blur">
-        <MousePointer2 className="h-3.5 w-3.5" /> Drag to explore · hover the truck or a worker
+        <MousePointer2 className="h-3.5 w-3.5" /> {t("Drag to explore · hover the truck or a worker")}
       </div>
     </div>
   );

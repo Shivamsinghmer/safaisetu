@@ -102,7 +102,7 @@ export default function OverviewMap({
   tickets = [],
   orgs = [],
   heat = false,
-  center = [23.2599, 77.4126],
+  center = [26.4499, 80.3319], // Kanpur
   height = 420,
   onSelect,
 }: {

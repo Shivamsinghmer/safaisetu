@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useT } from "@/components/i18n-provider";
 import Link from "@/components/nav-link";
 import { ArrowRight, Check, MoreHorizontal, Zap } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -13,7 +14,8 @@ import { cn } from "@/lib/utils";
  * Animations stay paused on their first frame until the section scrolls into view.
  */
 export function FeatureShowcase() {
-  const lines = ["From one photo", "to a clean street."];
+  const { t } = useT();
+  const lines = [t("From one photo"), t("to a clean street.")];
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
 
@@ -47,21 +49,22 @@ export function FeatureShowcase() {
         </h2>
         <div className="flex max-w-[380px] flex-col items-start gap-4 lg:flex-1">
           <p className="animate-fade-up text-[14px] leading-relaxed text-muted-foreground [animation-delay:0.3s]">
-            Three steps, one record. AI tags the report, routing sends it to whoever is responsible, and the
-            ticket only closes when the reporter agrees it&apos;s clean.
+            {t(
+              "Three steps, one record. AI tags the report, routing sends it to whoever is responsible, and the ticket only closes when the reporter agrees it's clean.",
+            )}
           </p>
           <div className="flex animate-fade-up flex-wrap gap-2 [animation-delay:0.4s]">
             <Link
               href="/app/report"
               className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-transform duration-200 hover:-translate-y-px hover:bg-primary/90"
             >
-              Report an issue <ArrowRight className="h-4 w-4" />
+              {t("Report an issue")} <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/login"
               className="inline-flex items-center rounded-full border border-border bg-card px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
-              Try the demo
+              {t("Try the demo")}
             </Link>
           </div>
         </div>
@@ -70,25 +73,25 @@ export function FeatureShowcase() {
       <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
         <FeatureCard
           delay="0.5s"
-          label="01 · Report"
-          title="AI reads the photo for you"
-          checks={["Category and severity filled in automatically", "GPS pin and ward attached, EXIF stripped"]}
+          label={t("01 · Report")}
+          title={t("AI reads the photo for you")}
+          checks={[t("Category and severity filled in automatically"), t("GPS pin and ward attached, EXIF stripped")]}
         >
           <ReportVisual start={inView} />
         </FeatureCard>
         <FeatureCard
           delay="0.6s"
-          label="02 · Route"
-          title="Straight to the right desk"
-          checks={["Inside a society → its secretary first", "Dumping and missed pickups → the city"]}
+          label={t("02 · Route")}
+          title={t("Straight to the right desk")}
+          checks={[t("Inside a society → its secretary first"), t("Dumping and missed pickups → the city")]}
         >
           <RouteVisual />
         </FeatureCard>
         <FeatureCard
           delay="0.7s"
-          label="03 · Resolve"
-          title="Proof on every ticket"
-          checks={["Before and after photos from the field", "Past-SLA tickets flagged in red"]}
+          label={t("03 · Resolve")}
+          title={t("Proof on every ticket")}
+          checks={[t("Before and after photos from the field"), t("Past-SLA tickets flagged in red")]}
           className="md:col-span-2 lg:col-span-1"
         >
           <ResolveVisual />

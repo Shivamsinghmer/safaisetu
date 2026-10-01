@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import imageCompression from "browser-image-compression";
 import { Camera, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useT } from "@/components/i18n-provider";
 import { cn } from "@/lib/utils";
 
 export interface CapturedPhoto {
@@ -36,6 +37,7 @@ export function PhotoCapture({
   aspect?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const { t } = useT();
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export function PhotoCapture({
       onCaptured({ path, previewUrl, dataUrl });
     } catch (e) {
       console.error(e);
-      setError("Upload failed. Check your connection and try again.");
+      setError(t("Upload failed. Check your connection and try again."));
       setPreview(null);
     } finally {
       setBusy(false);
@@ -96,7 +98,7 @@ export function PhotoCapture({
                 ) : (
                   <Sparkles className="h-4 w-4 text-violet" />
                 )}
-                {busy ? "Uploading…" : "AI is reading the photo…"}
+                {t(busy ? "Uploading…" : "AI is reading the photo…")}
               </span>
             </div>
           )}
@@ -106,7 +108,7 @@ export function PhotoCapture({
             disabled={busy}
             className="absolute right-3 bottom-3 inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-white/95 px-3 text-[13px] font-bold text-ink shadow-subtle hover:bg-white"
           >
-            <RefreshCw className="h-3.5 w-3.5" /> Retake
+            <RefreshCw className="h-3.5 w-3.5" /> {t("Retake")}
           </button>
         </div>
       ) : (
@@ -123,8 +125,8 @@ export function PhotoCapture({
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
             {busy ? <Loader2 className="h-6 w-6 animate-spin" /> : <Camera className="h-6 w-6" />}
           </span>
-          <span className="font-display text-[15px] font-bold text-ink">{label}</span>
-          <span className="text-xs text-ash">JPG or PNG · compressed on your phone before upload</span>
+          <span className="font-display text-[15px] font-bold text-ink">{t(label)}</span>
+          <span className="text-xs text-ash">{t("JPG or PNG · compressed on your phone before upload")}</span>
         </button>
       )}
       {error && <p className="mt-2 text-sm text-coral">{error}</p>}

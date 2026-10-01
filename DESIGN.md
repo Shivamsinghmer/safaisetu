@@ -70,6 +70,8 @@ resolved = mint + night · closed = emerald ring · reopened = pink + snow · re
 - ❌ Hard-coded hex colors or `text-white` on theme surfaces (use `text-primary-foreground` / `snow`).
 - ❌ `white/xx` alpha classes on fixed-dark panels. `white` is the theme card color and turns dark in dark mode. Use `snow/xx`.
 - ❌ Decorative gradients on cards; more than one rainbow ring per page.
+- ❌ Native `<select>`. Use `Select` from `@/components/ui` (themed listbox, keyboard accessible, works in forms via `name`).
+- ❌ Hard-coded user-facing text on citizen, worker or guest screens. Pass it through `t()` (see Language below).
 
 ## Responsive & PWA
 Every screen must work at **375px** (phone) in light and dark, with no sideways scroll.
@@ -87,6 +89,52 @@ Every screen must work at **375px** (phone) in light and dark, with no sideways 
 - **Charts:** Recharts grid and ticks are themed in `globals.css`.
 - **PWA:** `viewportFit: "cover"`, `appleWebApp`, generated icons and manifest shortcuts. See
   [docs/architecture.md](docs/architecture.md#pwa).
+
+## App shell, notifications and settings
+- The **notification bell** (`src/components/notification-bell.tsx`) sits in the desktop sidebar header next to the logo
+  and in the mobile header before the theme toggle. It shows a coral count badge (99+ max), updates live, and links to
+  `/app/notifications`, where unread rows have a coral dot and bold titles.
+- **Settings** (`/app/settings`) is three cards: profile, email preferences (checkbox rows with a title and one-line
+  explanation), and language (pill radios that fill with `primary` when chosen).
+
+## Ticket actions
+- **Proof first:** whenever someone can resolve a ticket, the after-photo picker is shown and the success button stays
+  disabled, reading "Add the after photo to resolve", until a photo is added.
+- Pickups show a date input ("Collection date") with a secondary "Save collection date" button for the handler.
+- A resident whose internal ticket is overdue gets a primary "Send to the municipality" button.
+- Every ticket shows a blue outlined **Get directions** pill under its location.
+
+## Report form extras
+- **Already reported nearby:** an amber-tinted panel under the map lists open reports within ~80 m, each with a dark
+  **Me too** pill. After pressing it, the row links to the ticket instead.
+- If AI says the photo isn't waste, the amber warning includes a checkbox ("I'm sure this is a waste problem") that
+  must be ticked before submitting.
+
+## Public pages (guest QR, tracking, scorecard)
+Pages a visitor reaches without an account (`/qr/[id]`, `/track/[token]`, `/scorecard`) use a plain single column
+(`max-w-lg`, or `max-w-[1000px]` for the scorecard table) on `bg-background`, with the logo at the top and no app shell.
+The guest QR page has an English/हिन्दी pill top-right. Photo capture is one large tappable 4:3 card; categories are
+a two-column grid of 44px buttons, so the whole report is a few thumb taps.
+
+## Dropdowns
+`Select` (`src/components/ui/select.tsx`) replaces the native select everywhere. The trigger is a button styled like
+an input (`variant="field"`) or a compact rounded pill for navs (`variant="pill"`). The list opens on the `popover`
+surface with a `border`, `rounded-xl` and `shadow-lg`, pops in over 140ms (no motion with reduced-motion), highlights
+the active row with `bg-muted`, marks the chosen one with a brand-green check, and can show a second line (`hint`).
+Keyboard: Enter, Space or ↓ opens; ↑/↓/Home/End move; Enter picks; Esc or Tab closes.
+
+## Language
+English and Hindi (`src/lib/i18n.ts`). The landing nav, guest QR page and tracking page have a `LanguageSwitcher`
+pill (globe icon + current language) built on `Select`; the app uses the language setting in `/app/settings`. Write user-facing text in plain English and wrap it in `t("…")`: the English
+string is the key, and a missing Hindi entry falls back to English. Use `getT()` in server components and `useT()` in
+client components. Statuses, severities and categories have helpers (`statusText`, `severityText`, `categoryText`);
+`StatusPill` and `SeverityTag` already translate themselves. Devanagari needs no font change: Inter falls back to the
+system Devanagari face.
+
+## Footer
+The landing footer's bin legend uses one card per stream: a tinted header band in the bin's color with the bin glyph
+and a chip ("Green bin", "Blue bin", "Red bin", "Drop-off point" for e-waste), then the stream name and three example
+chips. Two per row on phones, a row of four after the intro on `lg+`. The oversized wordmark is clipped by the bottom bar.
 
 ## Auth pages
 A split layout (`src/app/(auth)/layout.tsx`). On `lg+`, the left side is a sticky, always-dark forest-green brand panel

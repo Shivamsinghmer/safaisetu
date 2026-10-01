@@ -1,11 +1,12 @@
 import Link from "@/components/nav-link";
 import { ChevronRight, Clock, QrCode, Truck, ArrowUpRight } from "lucide-react";
 import { SeverityTag, StatusPill } from "@/components/ui";
-import { categoryLabel } from "@/lib/constants";
+import { getT } from "@/lib/i18n-server";
+import { categoryText } from "@/lib/i18n";
 import type { TicketListRow } from "@/lib/tickets";
 import { cn, isOverdue, timeAgo } from "@/lib/utils";
 
-export function TicketList({
+export async function TicketList({
   tickets,
   showOrg = true,
   showWard = false,
@@ -16,6 +17,7 @@ export function TicketList({
   showWard?: boolean;
   className?: string;
 }) {
+  const { t: tr, locale } = await getT();
   return (
     <ul className={cn("divide-y divide-bone overflow-hidden rounded-xl border border-bone bg-card", className)}>
       {tickets.map((t) => {
@@ -31,7 +33,7 @@ export function TicketList({
                   <span className="font-mono text-[12px] font-medium text-ash">{t.code}</span>
                   {t.kind === "pickup" && (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue">
-                      <Truck className="h-3 w-3" /> Pickup
+                      <Truck className="h-3 w-3" /> {tr("Pickup")}
                     </span>
                   )}
                   {t.source === "qr" && (
@@ -46,7 +48,7 @@ export function TicketList({
                   )}
                 </div>
                 <div className="mt-0.5 truncate font-display text-[15px] font-bold tracking-[-0.01em] text-ink">
-                  {categoryLabel(t.category)}
+                  {categoryText(locale, t.category)}
                 </div>
                 <div className="mt-0.5 truncate text-[13px] text-slate">
                   {[showOrg && t.org?.name, t.unit_label, showWard && t.ward?.name, t.address]
@@ -60,14 +62,14 @@ export function TicketList({
                   <SeverityTag severity={t.severity} />
                   <span className={cn("inline-flex items-center gap-1 text-xs", overdue ? "font-semibold text-coral" : "text-ash")}>
                     <Clock className="h-3 w-3" />
-                    {overdue ? "Overdue" : timeAgo(t.created_at)}
+                    {overdue ? tr("Overdue") : timeAgo(t.created_at)}
                   </span>
                 </div>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1 sm:hidden">
                 <StatusPill status={t.status} />
                 <span className={cn("text-[11px]", overdue ? "font-semibold text-coral" : "text-ash")}>
-                  {overdue ? "Overdue" : timeAgo(t.created_at)}
+                  {overdue ? tr("Overdue") : timeAgo(t.created_at)}
                 </span>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-fog transition-transform group-hover:translate-x-0.5" />

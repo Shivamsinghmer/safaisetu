@@ -5,10 +5,10 @@ import { Card, CardHeader, StatCard } from "@/components/ui";
 import { TicketList } from "@/components/ticket-list";
 import { LiveRefresh } from "@/components/live-refresh";
 import { BreakdownBars, DailyVolumeChart } from "@/components/charts";
-import { categoryLabel, OPEN_STATUSES, ORG_TYPE_META } from "@/lib/constants";
+import { categoryLabel, ORG_TYPE_META } from "@/lib/constants";
 import { TICKET_LIST_SELECT, type TicketListRow } from "@/lib/tickets";
 import type { OrgType } from "@/lib/types";
-import { cn, formatHours, hoursBetween, isOverdue } from "@/lib/utils";
+import { cn, formatHours } from "@/lib/utils";
 import { loadMuni } from "./data";
 import { MapPanel } from "./map-panel";
 
@@ -26,83 +26,106 @@ export default async function MuniDashboard() {
   const now = requestTime();
   const since = new Date(now - DAYS * 86400000).toISOString();
 
-  const [{ data: ticketRows }, { data: orgRows }] = await Promise.all([
-    supabase
-      .from("tickets")
-      .select(`${TICKET_LIST_SELECT}, resolved_at`)
-      .gte("created_at", since)
-      .order("created_at", { ascending: false })
-      .limit(2000),
-    supabase.from("organizations").select("id, name, type, status, lat, lng, ward_id"),
-  ]);
+  // Numbers come from aggregates computed in Postgres (row-level security limits them to this
+  // municipality's wards), so they stay correct however many tickets there are.
+  const [
+    { data: ticketRows },
+    { data: orgRows },
+    { data: wardRows },
+    { data: dailyRows },
+    { data: breakdownRows },
+    { data: urgentRows },
+  ] =
+    await Promise.all([
+      // Map points only: recent tickets, capped for the map's sake
+      supabase
+        .from("tickets")
+        .select(`${TICKET_LIST_SELECT}, resolved_at`)
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(1500),
+      supabase.from("organizations").select("id, name, type, status, lat, lng, ward_id"),
+      supabase.rpc("muni_ward_stats", { p_days: DAYS }),
+      supabase.rpc("muni_daily_counts", { p_days: DAYS }),
+      supabase.rpc("muni_breakdowns", { p_days: DAYS }),
+      supabase
+        .from("tickets")
+        .select(TICKET_LIST_SELECT)
+        .eq("scope", "municipal")
+        .in("status", ["submitted", "reopened"])
+        .order("severity", { ascending: false })
+        .order("created_at", { ascending: true })
+        .limit(8),
+    ]);
+  const needsAssignment = (urgentRows ?? []) as unknown as TicketListRow[];
   const tickets = (ticketRows ?? []) as unknown as (TicketListRow & { resolved_at: string | null })[];
   const orgs = (orgRows ?? []) as { id: string; name: string; type: OrgType; status: string; lat: number; lng: number; ward_id: string | null }[];
   const approvedOrgs = orgs.filter((o) => o.status === "approved");
 
-  const municipal = tickets.filter((t) => t.scope === "municipal");
-  const open = municipal.filter((t) => OPEN_STATUSES.includes(t.status));
-  const unassigned = open.filter((t) => ["submitted", "reopened"].includes(t.status));
-  const overdue = open.filter((t) => isOverdue(t.sla_due_at, t.status));
-  const resolved = tickets.filter((t) => t.resolved_at);
-  const avgRes = resolved.length
-    ? resolved.reduce((s, t) => s + hoursBetween(t.created_at, t.resolved_at!), 0) / resolved.length
+  type WardRow = {
+    ward_id: string | null;
+    total: number;
+    open: number;
+    unassigned: number;
+    overdue: number;
+    resolved: number;
+    resolved_7d: number;
+    avg_hours: number | null;
+  };
+  const byWard = new Map(((wardRows ?? []) as WardRow[]).map((w) => [w.ward_id, w]));
+  const all = [...byWard.values()];
+  const sum = (k: keyof WardRow) => all.reduce((a, w) => a + (Number(w[k]) || 0), 0);
+  const open = sum("open");
+  const unassigned = sum("unassigned");
+  const overdue = sum("overdue");
+  const resolvedCount = sum("resolved");
+  const resolved7 = sum("resolved_7d");
+  const avgRes = resolvedCount
+    ? all.reduce((a, w) => a + (w.avg_hours ?? 0) * w.resolved, 0) / resolvedCount
     : NaN;
-  const weekAgo = now - 7 * 86400000;
-  const resolved7 = resolved.filter((t) => new Date(t.resolved_at!).getTime() > weekAgo).length;
 
   // Daily series
-  const days = [...Array(DAYS)].map((_, i) => {
-    const d = new Date(now - (DAYS - 1 - i) * 86400000);
-    const key = d.toISOString().slice(0, 10);
+  const days = ((dailyRows ?? []) as { day: string; reported: number; resolved: number }[]).map((d) => {
+    const date = new Date(`${d.day}T00:00:00`);
     return {
-      key,
-      day: d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" }),
-      label: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
-      reported: 0,
-      resolved: 0,
+      key: d.day,
+      day: date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" }),
+      label: date.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+      reported: d.reported,
+      resolved: d.resolved,
     };
   });
-  const byKey = new Map(days.map((d) => [d.key, d]));
-  tickets.forEach((t) => {
-    const d = byKey.get(t.created_at.slice(0, 10));
-    if (d) d.reported++;
-    if (t.resolved_at) {
-      const r = byKey.get(t.resolved_at.slice(0, 10));
-      if (r) r.resolved++;
-    }
-  });
 
-  // Category breakdown (issues only)
-  const catCounts = new Map<string, number>();
-  tickets.filter((t) => t.kind === "issue").forEach((t) => catCounts.set(t.category, (catCounts.get(t.category) ?? 0) + 1));
-  const categories = [...catCounts.entries()].sort((a, b) => b[1] - a[1]).map(([c, n]) => ({ label: categoryLabel(c), value: n }));
+  // Category and organization breakdowns
+  const breakdowns = (breakdownRows ?? []) as { kind: string; key: string; n: number }[];
+  const categories = breakdowns
+    .filter((b) => b.kind === "category")
+    .sort((a, b) => b.n - a.n)
+    .map((b) => ({ label: categoryLabel(b.key), value: b.n }));
 
   // Ward hotspots
   const wardStats = wards
     .map((w) => {
-      const wt = tickets.filter((t) => t.ward_id === w.id);
-      const wOpen = wt.filter((t) => OPEN_STATUSES.includes(t.status));
-      const wRes = wt.filter((t) => t.resolved_at);
+      const r = byWard.get(w.id);
       return {
         ward: w,
-        total: wt.length,
-        open: wOpen.length,
-        overdue: wOpen.filter((t) => isOverdue(t.sla_due_at, t.status)).length,
-        avg: wRes.length ? wRes.reduce((s, t) => s + hoursBetween(t.created_at, t.resolved_at!), 0) / wRes.length : NaN,
+        total: r?.total ?? 0,
+        open: r?.open ?? 0,
+        overdue: r?.overdue ?? 0,
+        avg: r?.avg_hours ?? NaN,
         orgs: approvedOrgs.filter((o) => o.ward_id === w.id).length,
       };
     })
     .sort((a, b) => b.open - a.open || b.total - a.total);
 
   // Organizations with the most complaints
-  const orgCounts = new Map<string, number>();
-  tickets.forEach((t) => t.org_id && orgCounts.set(t.org_id, (orgCounts.get(t.org_id) ?? 0) + 1));
-  const repeatOrgs = [...orgCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
+  const repeatOrgs = breakdowns
+    .filter((b) => b.kind === "org")
+    .sort((a, b) => b.n - a.n)
     .slice(0, 5)
-    .map(([id, n]) => {
-      const o = orgs.find((x) => x.id === id);
-      return { label: o?.name ?? "Unknown", value: n, sub: o ? ORG_TYPE_META[o.type].label : undefined };
+    .map((b) => {
+      const o = orgs.find((x) => x.id === b.key);
+      return { label: o?.name ?? "Unknown", value: b.n, sub: o ? ORG_TYPE_META[o.type].label : undefined };
     });
 
   const orgTypeCounts = (["society", "college", "public_place"] as OrgType[]).map(
@@ -125,14 +148,14 @@ export default async function MuniDashboard() {
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Open complaints" value={open.length} caption={`${unassigned.length} not yet assigned`} />
+        <StatCard label="Open complaints" value={open} caption={`${unassigned} not yet assigned`} />
         <StatCard
           label="Past SLA"
-          value={overdue.length}
-          caption={open.length ? `${Math.round((overdue.length / open.length) * 100)}% of open tickets` : "None open"}
-          tone={overdue.length ? "danger" : "good"}
+          value={overdue}
+          caption={open ? `${Math.round((overdue / open) * 100)}% of open tickets` : "None open"}
+          tone={overdue ? "danger" : "good"}
         />
-        <StatCard label="Resolved this week" value={resolved7} caption={`${resolved.length} in ${DAYS} days`} tone="good" />
+        <StatCard label="Resolved this week" value={resolved7} caption={`${resolvedCount} in ${DAYS} days`} tone="good" />
         <StatCard label="Avg resolution" value={formatHours(avgRes)} caption="Report → resolved" />
       </div>
 
@@ -253,8 +276,8 @@ export default async function MuniDashboard() {
             Full queue <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        {unassigned.length ? (
-          <TicketList tickets={unassigned.slice(0, 8)} showWard />
+        {needsAssignment.length ? (
+          <TicketList tickets={needsAssignment} showWard />
         ) : (
           <Card className="p-6 text-sm text-slate">Every open complaint has a worker assigned.</Card>
         )}

@@ -9,6 +9,11 @@ issues, request pickups and track every complaint to resolution.
   notices and print QR codes for bins.
 - **Municipality** verifies organizations, assigns field workers, tracks SLAs and sees hotspots on a live map.
 - **Field workers** work assigned tasks and upload an after photo as proof.
+- **Visitors** scan a QR code on a bin and report without an account, then follow a private tracking link.
+- **Anyone** can see each ward's performance on the public scorecard (`/scorecard`).
+
+Also: English and Hindi, in-app and email notifications with opt-outs, "me too" on nearby reports instead of
+duplicates, automatic escalation when a society misses a deadline, and rate limits.
 
 Installable as a PWA on phones (home-screen icon, full-screen, shortcuts to Report, Pickup and Tickets).
 
@@ -34,7 +39,8 @@ Next.js 16 (App Router, Server Actions) · TypeScript · Tailwind CSS v4 · Supa
    ```
 4. In the Supabase dashboard → Authentication → Providers → Email, turn **off** "Confirm email" for the demo, or configure
    Resend as custom SMTP.
-5. Seed demo data: `npm run seed`
+5. Seed demo data (Kanpur Nagar Nigam): `npm run seed`. Reset it later with `npm run demo:reset`.
+   Check the database rules with `npm run test:db` (runs on the linked project, no Docker needed).
 6. `npm run dev`, then open http://localhost:3000
 
 Deploying: see [docs/deployment.md](docs/deployment.md).

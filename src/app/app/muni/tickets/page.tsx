@@ -6,40 +6,50 @@ import { FilterTabs, TicketList } from "@/components/ticket-list";
 import { LiveRefresh } from "@/components/live-refresh";
 import { OPEN_STATUSES } from "@/lib/constants";
 import { TICKET_LIST_SELECT, type TicketListRow } from "@/lib/tickets";
-import { cn, isOverdue } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { loadMuni } from "../data";
 
 export const metadata: Metadata = { title: "Complaint queue" };
 
+const PAGE_SIZE = 50;
+type Tab = "new" | "overdue" | "active" | "pickups" | "resolved" | "all";
+const TABS: Tab[] = ["new", "overdue", "active", "pickups", "resolved", "all"];
+
 export default async function MuniQueuePage({ searchParams }: PageProps<"/app/muni/tickets">) {
-  const { tab = "new", ward } = (await searchParams) as { tab?: string; ward?: string };
+  const sp = (await searchParams) as { tab?: string; ward?: string; page?: string };
+  const tab: Tab = TABS.includes(sp.tab as Tab) ? (sp.tab as Tab) : "new";
+  const ward = sp.ward;
+  const page = Math.max(1, Number(sp.page) || 1);
   const { supabase, wards } = await loadMuni();
+  const nowIso = new Date().toISOString();
 
-  let q = supabase
-    .from("tickets")
-    .select(TICKET_LIST_SELECT)
-    .eq("scope", "municipal")
-    .order("created_at", { ascending: false })
-    .limit(500);
-  if (ward) q = q.eq("ward_id", ward);
-  const { data } = await q;
-  const all = (data ?? []) as unknown as TicketListRow[];
-
-  const groups: Record<string, TicketListRow[]> = {
-    new: all.filter((t) => ["submitted", "reopened"].includes(t.status)),
-    overdue: all.filter((t) => isOverdue(t.sla_due_at, t.status)),
-    active: all.filter((t) => ["assigned", "in_progress"].includes(t.status)),
-    pickups: all.filter((t) => t.kind === "pickup" && OPEN_STATUSES.includes(t.status)),
-    resolved: all.filter((t) => ["resolved", "closed"].includes(t.status)),
-    all,
+  // Every tab is its own filtered query, counted and paged in the database
+  const scoped = <Q extends { eq: (c: string, v: string) => Q }>(q: Q) => (ward ? q.eq("ward_id", ward) : q);
+  const filter = (t: Tab, q: ReturnType<typeof baseQuery>) => {
+    if (t === "new") return q.in("status", ["submitted", "reopened"]);
+    if (t === "overdue") return q.in("status", OPEN_STATUSES).lt("sla_due_at", nowIso);
+    if (t === "active") return q.in("status", ["assigned", "in_progress"]);
+    if (t === "pickups") return q.eq("kind", "pickup").in("status", OPEN_STATUSES);
+    if (t === "resolved") return q.in("status", ["resolved", "closed"]);
+    return q;
   };
-  const list = (groups[tab] ?? groups.new!).sort((a, b) => {
-    // most severe & oldest first in working views
-    if (tab === "resolved" || tab === "all") return 0;
-    const sev = { high: 0, medium: 1, low: 2 };
-    return sev[a.severity] - sev[b.severity] || a.created_at.localeCompare(b.created_at);
-  });
-  const qs = (t: string) => `?tab=${t}${ward ? `&ward=${ward}` : ""}`;
+  function baseQuery(select: string, head = false) {
+    return scoped(supabase.from("tickets").select(select, head ? { count: "exact", head: true } : { count: "exact" }).eq("scope", "municipal"));
+  }
+
+  const working = tab !== "resolved" && tab !== "all";
+  let listQuery = filter(tab, baseQuery(TICKET_LIST_SELECT));
+  listQuery = working
+    ? listQuery.order("severity", { ascending: false }).order("created_at", { ascending: true })
+    : listQuery.order("created_at", { ascending: false });
+  const [{ data, count: total }, ...counts] = await Promise.all([
+    listQuery.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
+    ...TABS.map((t) => filter(t, baseQuery("id", true))),
+  ]);
+  const list = (data ?? []) as unknown as TicketListRow[];
+  const countOf = Object.fromEntries(TABS.map((t, i) => [t, counts[i]?.count ?? 0])) as Record<Tab, number>;
+  const pages = Math.max(1, Math.ceil((total ?? 0) / PAGE_SIZE));
+  const qs = (t: string, p = 1) => `?tab=${t}${ward ? `&ward=${ward}` : ""}${p > 1 ? `&page=${p}` : ""}`;
 
   return (
     <>
@@ -62,16 +72,37 @@ export default async function MuniQueuePage({ searchParams }: PageProps<"/app/mu
       <FilterTabs
         active={tab}
         tabs={[
-          { key: "new", label: "Needs assignment", href: qs("new"), count: groups.new!.length },
-          { key: "overdue", label: "Past SLA", href: qs("overdue"), count: groups.overdue!.length },
-          { key: "active", label: "In the field", href: qs("active"), count: groups.active!.length },
-          { key: "pickups", label: "Pickups", href: qs("pickups"), count: groups.pickups!.length },
-          { key: "resolved", label: "Resolved", href: qs("resolved"), count: groups.resolved!.length },
-          { key: "all", label: "All", href: qs("all"), count: all.length },
+          { key: "new", label: "Needs assignment", href: qs("new"), count: countOf.new },
+          { key: "overdue", label: "Past SLA", href: qs("overdue"), count: countOf.overdue },
+          { key: "active", label: "In the field", href: qs("active"), count: countOf.active },
+          { key: "pickups", label: "Pickups", href: qs("pickups"), count: countOf.pickups },
+          { key: "resolved", label: "Resolved", href: qs("resolved"), count: countOf.resolved },
+          { key: "all", label: "All", href: qs("all"), count: countOf.all },
         ]}
       />
       {list.length ? (
-        <TicketList tickets={list} showWard />
+        <>
+          <TicketList tickets={list} showWard />
+          {pages > 1 && (
+            <nav className="mt-4 flex items-center justify-between text-sm" aria-label="Pages">
+              <span className="text-slate">
+                Page {page} of {pages} · {total} tickets
+              </span>
+              <div className="flex gap-2">
+                {page > 1 && (
+                  <Link href={qs(tab, page - 1)} className="rounded-full border border-bone bg-card px-4 py-2 font-semibold text-ink">
+                    Previous
+                  </Link>
+                )}
+                {page < pages && (
+                  <Link href={qs(tab, page + 1)} className="rounded-full border border-bone bg-card px-4 py-2 font-semibold text-ink">
+                    Next
+                  </Link>
+                )}
+              </div>
+            </nav>
+          )}
+        </>
       ) : (
         <EmptyState icon={<ClipboardCheck className="h-8 w-8" />} title="Queue clear" description="Nothing in this view right now." />
       )}

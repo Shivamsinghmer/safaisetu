@@ -53,7 +53,12 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 
 export async function requireViewer(): Promise<Viewer> {
   const viewer = await getViewer();
-  if (!viewer) redirect("/login");
+  if (!viewer) {
+    // Signed in, but the account behind the token is gone: clear the stale session
+    // instead of looping between /login and /app.
+    const { data } = await (await createClient()).auth.getClaims();
+    redirect(data?.claims?.sub ? "/auth/reset" : "/login");
+  }
   return viewer;
 }
 

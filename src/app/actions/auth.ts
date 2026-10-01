@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { publicSiteUrl } from "@/lib/site-url";
+import { LIMITS, TOO_MANY, allow, clientIp } from "@/lib/rate-limit";
 import type { ActionState } from "@/lib/types";
 
 function safeNext(next: FormDataEntryValue | null) {
@@ -39,6 +41,7 @@ export async function signUpAction(_: ActionState, formData: FormData): Promise<
   const parsed = signUpSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]!.message };
   const { email, password, full_name, phone } = parsed.data;
+  if (!(await allow(`signup:${await clientIp()}`, LIMITS.signup.max, LIMITS.signup.window))) return { error: TOO_MANY };
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -46,7 +49,7 @@ export async function signUpAction(_: ActionState, formData: FormData): Promise<
     password,
     options: {
       data: { full_name, phone: phone || null },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/app`,
+      emailRedirectTo: `${await publicSiteUrl()}/app`,
     },
   });
   if (error) return { error: error.message };
@@ -65,7 +68,9 @@ const DEMO_ACCOUNTS = {
   worker: "worker@demo.safaisetu.in",
 } as const;
 
+/** Demo logins can be switched off for a real deployment with DEMO_LOGIN=off. */
 export async function demoSignInAction(formData: FormData) {
+  if (process.env.DEMO_LOGIN === "off") redirect("/login");
   const role = formData.get("role") as keyof typeof DEMO_ACCOUNTS;
   const email = DEMO_ACCOUNTS[role];
   const password = process.env.DEMO_PASSWORD;

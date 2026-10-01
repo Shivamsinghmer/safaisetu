@@ -1,6 +1,7 @@
 "use server";
 
 import { getViewer } from "@/lib/session";
+import { LIMITS, TOO_MANY, allow } from "@/lib/rate-limit";
 import {
   AiError,
   analyzeComplaintImage,
@@ -30,8 +31,10 @@ function failure(context: string, e: unknown, fallback: string): { ok: false; er
 }
 
 export async function analyzePhotoAction(dataUrl: string): Promise<Result<ComplaintAnalysis>> {
-  if (!(await getViewer())) return { ok: false, error: "Sign in to use AI tagging" };
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false, error: "Sign in to use AI tagging" };
   if (!validImage(dataUrl)) return { ok: false, error: "Unsupported or too large image" };
+  if (!(await allow(`ai:${viewer.userId}`, LIMITS.ai.max, LIMITS.ai.window))) return { ok: false, error: TOO_MANY };
   try {
     return { ok: true, data: await analyzeComplaintImage(dataUrl) };
   } catch (e) {
@@ -40,8 +43,10 @@ export async function analyzePhotoAction(dataUrl: string): Promise<Result<Compla
 }
 
 export async function classifyItemAction(dataUrl: string): Promise<Result<ItemClassification>> {
-  if (!(await getViewer())) return { ok: false, error: "Sign in to use the classifier" };
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false, error: "Sign in to use the classifier" };
   if (!validImage(dataUrl)) return { ok: false, error: "Unsupported or too large image" };
+  if (!(await allow(`ai:${viewer.userId}`, LIMITS.ai.max, LIMITS.ai.window))) return { ok: false, error: TOO_MANY };
   try {
     return { ok: true, data: await classifyWasteItem(dataUrl) };
   } catch (e) {

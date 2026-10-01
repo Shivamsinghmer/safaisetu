@@ -19,7 +19,9 @@ if (!url || !key || !password) {
 const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 
 const DOMAIN = "demo.safaisetu.in";
-const MUNI_NAME = "Bhopal Municipal Corporation (Demo)";
+const MUNI_NAME = "Kanpur Nagar Nigam (Demo)";
+// Earlier demo cities, removed on every reset
+const LEGACY_MUNI_NAMES = ["Bhopal Municipal Corporation (Demo)"];
 
 // Deterministic PRNG so every seed looks the same
 let s = 42;
@@ -59,7 +61,7 @@ async function cleanup() {
     await db.from("tickets").delete().in("reporter_id", ids);
     await db.from("organizations").delete().in("created_by", ids);
   }
-  await db.from("municipalities").delete().eq("name", MUNI_NAME);
+  await db.from("municipalities").delete().in("name", [MUNI_NAME, ...LEGACY_MUNI_NAMES]);
   let removed = 0;
   for (let attempt = 0; attempt < 5; attempt++) {
     const { data: again } = await db.auth.admin.listUsers({ perPage: 1000 });
@@ -95,16 +97,16 @@ async function main() {
 
   // ---------------- Municipality & wards ----------------
   const muni = await must(
-    db.from("municipalities").insert({ name: MUNI_NAME, city: "Bhopal", state: "Madhya Pradesh" }).select().single(),
+    db.from("municipalities").insert({ name: MUNI_NAME, city: "Kanpur", state: "Uttar Pradesh" }).select().single(),
     "municipality",
   );
   const wardDefs = [
-    { code: "W-03", name: "Ward 3 · Old City", center_lat: 23.2685, center_lng: 77.4012 },
-    { code: "W-12", name: "Ward 12 · MP Nagar", center_lat: 23.2332, center_lng: 77.4343 },
-    { code: "W-19", name: "Ward 19 · Arera Colony", center_lat: 23.2156, center_lng: 77.4304 },
-    { code: "W-24", name: "Ward 24 · Kolar Road", center_lat: 23.1789, center_lng: 77.4198 },
-    { code: "W-31", name: "Ward 31 · Habibganj", center_lat: 23.2276, center_lng: 77.4415 },
-    { code: "W-40", name: "Ward 40 · TT Nagar", center_lat: 23.2404, center_lng: 77.3989 },
+    { code: "W-07", name: "Ward 7 · Civil Lines", center_lat: 26.4735, center_lng: 80.349 },
+    { code: "W-18", name: "Ward 18 · Swaroop Nagar", center_lat: 26.4786, center_lng: 80.3197 },
+    { code: "W-27", name: "Ward 27 · Kidwai Nagar", center_lat: 26.4318, center_lng: 80.3233 },
+    { code: "W-41", name: "Ward 41 · Govind Nagar", center_lat: 26.439, center_lng: 80.2975 },
+    { code: "W-33", name: "Ward 33 · Collectorganj", center_lat: 26.456, center_lng: 80.347 },
+    { code: "W-52", name: "Ward 52 · Kakadeo", center_lat: 26.4744, center_lng: 80.2958 },
   ];
   const wards = await must(
     db.from("wards").insert(wardDefs.map((w) => ({ ...w, municipality_id: muni.id }))).select(),
@@ -145,16 +147,16 @@ async function main() {
   // ---------------- Organizations ----------------
   type OrgSeed = { key: string; type: "society" | "college" | "public_place"; name: string; address: string; ward: string; lat: number; lng: number; admin: string; status?: "approved" | "pending"; email_domain?: string; reg?: string; units?: number };
   const orgSeeds: OrgSeed[] = [
-    { key: "gv", type: "society", name: "Green Valley Residency", address: "E-7, Arera Colony, Bhopal", ward: "W-19", lat: 23.2149, lng: 77.4321, admin: secretary, reg: "MP/BPL/SOC/2014/0871", units: 240 },
-    { key: "lv", type: "society", name: "Lakeview Apartments", address: "Shyamla Hills, Bhopal", ward: "W-40", lat: 23.2441, lng: 77.3962, admin: residents[0]!, reg: "MP/BPL/SOC/2011/0342", units: 120 },
-    { key: "sn", type: "society", name: "Shanti Nagar Housing Society", address: "Kolar Road, Bhopal", ward: "W-24", lat: 23.1802, lng: 77.4176, admin: residents[1]!, reg: "MP/BPL/SOC/2018/1190", units: 310 },
-    { key: "rk", type: "society", name: "Royal Kingsway Enclave", address: "Hoshangabad Road, Bhopal", ward: "W-31", lat: 23.2251, lng: 77.4452, admin: residents[2]!, reg: "MP/BPL/SOC/2020/1433", units: 180 },
-    { key: "it", type: "college", name: "Demo Institute of Technology", address: "Raisen Road, Bhopal", ward: "W-12", lat: 23.2361, lng: 77.4389, admin: campus, email_domain: "demo-institute.edu.in", reg: "AICTE/DIT/1998", units: 14 },
-    { key: "mc", type: "college", name: "City Medical College Campus", address: "Royal Market, Bhopal", ward: "W-03", lat: 23.2662, lng: 77.4035, admin: residents[3]!, reg: "NMC/CMC/1955", units: 9 },
-    { key: "nm", type: "public_place", name: "New Market Traders' Association", address: "New Market, TT Nagar, Bhopal", ward: "W-40", lat: 23.2386, lng: 77.4007, admin: market, reg: "TA/BPL/1987/22", units: 6 },
-    { key: "bs", type: "public_place", name: "Habibganj Railway Station Concourse", address: "Habibganj, Bhopal", ward: "W-31", lat: 23.2297, lng: 77.4388, admin: residents[4]!, units: 4 },
-    { key: "up", type: "public_place", name: "Upper Lake Boat Club Promenade", address: "Lake View Road, Bhopal", ward: "W-03", lat: 23.2519, lng: 77.3871, admin: residents[5]!, units: 5 },
-    { key: "pd", type: "society", name: "Sunrise Heights (awaiting approval)", address: "Bawadia Kalan, Bhopal", ward: "W-24", lat: 23.1745, lng: 77.4265, admin: pendingAdmin, status: "pending", reg: "MP/BPL/SOC/2026/0012", units: 96 },
+    { key: "gv", type: "society", name: "Green Valley Residency", address: "E-7, Kidwai Nagar, Kanpur", ward: "W-27", lat: 26.4325, lng: 80.3245, admin: secretary, reg: "UP/KNP/SOC/2014/0871", units: 240 },
+    { key: "lv", type: "society", name: "Ganga View Apartments", address: "Kakadeo, Kanpur", ward: "W-52", lat: 26.4751, lng: 80.2945, admin: residents[0]!, reg: "UP/KNP/SOC/2011/0342", units: 120 },
+    { key: "sn", type: "society", name: "Shanti Nagar Housing Society", address: "Govind Nagar, Kanpur", ward: "W-41", lat: 26.4398, lng: 80.2988, admin: residents[1]!, reg: "UP/KNP/SOC/2018/1190", units: 310 },
+    { key: "rk", type: "society", name: "Royal Kingsway Enclave", address: "Mall Road, Kanpur", ward: "W-33", lat: 26.4575, lng: 80.3452, admin: residents[2]!, reg: "UP/KNP/SOC/2020/1433", units: 180 },
+    { key: "it", type: "college", name: "Demo Institute of Technology", address: "Swaroop Nagar, Kanpur", ward: "W-18", lat: 26.4795, lng: 80.321, admin: campus, email_domain: "demo-institute.edu.in", reg: "AICTE/DIT/1998", units: 14 },
+    { key: "mc", type: "college", name: "City Medical College Campus", address: "Civil Lines, Kanpur", ward: "W-07", lat: 26.472, lng: 80.347, admin: residents[3]!, reg: "NMC/CMC/1955", units: 9 },
+    { key: "nm", type: "public_place", name: "Kakadeo Market Traders' Association", address: "Kakadeo Market, Kanpur", ward: "W-52", lat: 26.4738, lng: 80.2965, admin: market, reg: "TA/KNP/1987/22", units: 6 },
+    { key: "bs", type: "public_place", name: "Kanpur Central Station Concourse", address: "Collectorganj, Kanpur", ward: "W-33", lat: 26.4543, lng: 80.3508, admin: residents[4]!, units: 4 },
+    { key: "up", type: "public_place", name: "Ganga Barrage Ghat Promenade", address: "Ganga Barrage, Kanpur", ward: "W-07", lat: 26.503, lng: 80.316, admin: residents[5]!, units: 5 },
+    { key: "pd", type: "society", name: "Sunrise Heights (awaiting approval)", address: "Barra, Kanpur", ward: "W-41", lat: 26.419, lng: 80.307, admin: pendingAdmin, status: "pending", reg: "UP/KNP/SOC/2026/0012", units: 96 },
   ];
   const orgs = new Map<string, { id: string; seed: OrgSeed; ward_id: string }>();
   for (const o of orgSeeds) {
@@ -200,11 +202,11 @@ async function main() {
 
   // QR points
   const qrRows = [
-    { org_id: orgs.get("nm")!.id, label: "Food lane bins", lat: 23.2388, lng: 77.4011 },
-    { org_id: orgs.get("nm")!.id, label: "Main gate, Plaza side", lat: 23.2382, lng: 77.4002 },
-    { org_id: orgs.get("bs")!.id, label: "Platform 1 entrance", lat: 23.2299, lng: 77.4383 },
-    { org_id: orgs.get("up")!.id, label: "Boat Club ticket counter", lat: 23.2521, lng: 77.3876 },
-    { org_id: orgs.get("it")!.id, label: "Central canteen", lat: 23.2365, lng: 77.4392 },
+    { org_id: orgs.get("nm")!.id, label: "Food lane bins", lat: 26.474, lng: 80.2968 },
+    { org_id: orgs.get("nm")!.id, label: "Main gate, market side", lat: 26.4735, lng: 80.296 },
+    { org_id: orgs.get("bs")!.id, label: "Platform 1 entrance", lat: 26.4545, lng: 80.3503 },
+    { org_id: orgs.get("up")!.id, label: "Ghat steps, boating point", lat: 26.5032, lng: 80.3165 },
+    { org_id: orgs.get("it")!.id, label: "Central canteen", lat: 26.4798, lng: 80.3214 },
   ];
   const qrs = await must(db.from("qr_points").insert(qrRows).select("id, org_id, lat, lng"), "qr points");
 
@@ -228,12 +230,12 @@ async function main() {
   };
   // Hotspots drive the heatmap
   const hotspots = [
-    { ward: "W-03", lat: 23.2702, lng: 77.3995, w: 5 },
-    { ward: "W-31", lat: 23.2265, lng: 77.4431, w: 4 },
-    { ward: "W-12", lat: 23.2318, lng: 77.4331, w: 3 },
-    { ward: "W-40", lat: 23.2395, lng: 77.4015, w: 3 },
-    { ward: "W-24", lat: 23.1775, lng: 77.4221, w: 2 },
-    { ward: "W-19", lat: 23.2168, lng: 77.4289, w: 1 },
+    { ward: "W-07", lat: 26.475, lng: 80.3475, w: 5 },
+    { ward: "W-33", lat: 26.4555, lng: 80.349, w: 4 },
+    { ward: "W-18", lat: 26.4775, lng: 80.3185, w: 3 },
+    { ward: "W-52", lat: 26.4755, lng: 80.297, w: 3 },
+    { ward: "W-41", lat: 26.438, lng: 80.296, w: 2 },
+    { ward: "W-27", lat: 26.433, lng: 80.322, w: 1 },
   ];
   const reporters = [citizen, ...residents, ...students];
   const now = Date.now();

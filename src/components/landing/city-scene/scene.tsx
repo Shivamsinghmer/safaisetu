@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react";
+import { translate, type Locale } from "@/lib/i18n";
 import * as THREE from "three";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Html, OrbitControls, RoundedBox } from "@react-three/drei";
@@ -93,7 +94,14 @@ function useHover() {
   return [hovered, bind] as const;
 }
 
+// The page language, provided inside the Canvas (drei's <Html> overlay doesn't inherit context,
+// so labels are translated here, before they're handed to it)
+const SceneLocale = createContext<Locale>("en");
+
 function Label({ show, y, title, sub }: { show: boolean; y: number; title: string; sub: string }) {
+  const locale = useContext(SceneLocale);
+  title = translate(locale, title);
+  sub = translate(locale, sub);
   if (!show) return null;
   return (
     <Html position={[0, y, 0]} center distanceFactor={11} zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
@@ -595,7 +603,15 @@ function Diorama({ animate }: { animate: boolean }) {
   );
 }
 
-export default function CityScene({ active, reduced }: { active: boolean; reduced: boolean }): ReactNode {
+export default function CityScene({
+  active,
+  reduced,
+  locale = "en",
+}: {
+  active: boolean;
+  reduced: boolean;
+  locale?: Locale;
+}): ReactNode {
   const animate = active && !reduced;
   return (
     <Canvas
@@ -620,7 +636,9 @@ export default function CityScene({ active, reduced }: { active: boolean; reduce
       />
       <directionalLight position={[-6, 5, -8]} intensity={0.35} />
 
-      <Diorama animate={animate} />
+      <SceneLocale.Provider value={locale}>
+        <Diorama animate={animate} />
+      </SceneLocale.Provider>
 
       <ContactShadows position={[0, -0.72, 0]} opacity={0.3} scale={20} blur={2.6} far={3} />
       <OrbitControls

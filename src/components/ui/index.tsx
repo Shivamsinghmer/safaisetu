@@ -1,8 +1,6 @@
 import Link from "@/components/nav-link";
 import type { ComponentProps, ReactNode } from "react";
 import { cn, initials } from "@/lib/utils";
-import { SEVERITY_META, STATUS_META } from "@/lib/constants";
-import type { Severity, TicketStatus } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
 /* Button                                                               */
@@ -70,20 +68,7 @@ export function Pill({ className, children }: { className?: string; children: Re
   );
 }
 
-export function StatusPill({ status, className }: { status: TicketStatus; className?: string }) {
-  const meta = STATUS_META[status];
-  return <Pill className={cn(meta.className, className)}>{meta.label}</Pill>;
-}
-
-export function SeverityTag({ severity }: { severity: Severity }) {
-  const meta = SEVERITY_META[severity];
-  return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-slate">
-      <span className={cn("h-2 w-2 rounded-full", meta.dot)} aria-hidden />
-      {meta.label}
-    </span>
-  );
-}
+export { StatusPill, SeverityTag } from "./status";
 
 export function Tag({ className, children }: { className?: string; children: ReactNode }) {
   return (
@@ -238,9 +223,7 @@ export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
   return <textarea className={cn(control, "min-h-24 py-2.5", className)} {...props} />;
 }
 
-export function Select({ className, ...props }: ComponentProps<"select">) {
-  return <select className={cn(control, "h-10 appearance-none bg-[length:16px] pr-8", className)} {...props} />;
-}
+export { Select, type SelectOption } from "./select";
 
 export function Field({
   label,

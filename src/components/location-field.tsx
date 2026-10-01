@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Crosshair, Loader2, MapPin } from "lucide-react";
 import { PickerMap } from "@/components/maps";
 import { Input } from "@/components/ui";
+import { useT } from "@/components/i18n-provider";
 
-const DEFAULT: [number, number] = [23.2599, 77.4126];
+const DEFAULT: [number, number] = [26.4499, 80.3319]; // Kanpur
 
 async function reverseGeocode(lat: number, lng: number) {
   try {
@@ -31,6 +32,7 @@ export function LocationField({
   autoLocate = true,
   addressName = "address",
   onAddressChange,
+  onPositionChange,
 }: {
   initial?: { lat: number; lng: number; address?: string | null };
   locked?: boolean;
@@ -38,16 +40,21 @@ export function LocationField({
   addressName?: string;
   /** Called whenever the address text changes (reverse geocode or typing) */
   onAddressChange?: (address: string) => void;
+  /** Called whenever the pin moves (GPS fix, drag or tap) */
+  onPositionChange?: (lat: number, lng: number) => void;
 }) {
+  const { t } = useT();
   const [pos, setPos] = useState<[number, number]>(initial ? [initial.lat, initial.lng] : DEFAULT);
   const [address, setAddressState] = useState(initial?.address ?? "");
   const [note, setNote] = useState<string | null>(null);
   const addressTouched = useRef(Boolean(initial?.address));
   const geoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onAddressChangeRef = useRef(onAddressChange);
+  const onPositionChangeRef = useRef(onPositionChange);
   useEffect(() => {
     onAddressChangeRef.current = onAddressChange;
-  }, [onAddressChange]);
+    onPositionChangeRef.current = onPositionChange;
+  }, [onAddressChange, onPositionChange]);
 
   const setAddress = useCallback((a: string) => {
     setAddressState(a);
@@ -57,6 +64,7 @@ export function LocationField({
   const move = useCallback(
     (lat: number, lng: number) => {
       setPos([lat, lng]);
+      onPositionChangeRef.current?.(lat, lng);
       if (geoTimer.current) clearTimeout(geoTimer.current);
       geoTimer.current = setTimeout(async () => {
         const a = await reverseGeocode(lat, lng);
@@ -74,7 +82,7 @@ export function LocationField({
     if (!navigator.geolocation) {
       setTimeout(() => {
         setLocating(false);
-        setNote("Location isn't available on this device. Drag the pin instead.");
+        setNote(t("Location isn't available on this device. Drag the pin instead."));
       });
       return;
     }
@@ -86,11 +94,11 @@ export function LocationField({
       },
       () => {
         setLocating(false);
-        setNote("Couldn't get your location. Drag the pin or tap the map.");
+        setNote(t("Couldn't get your location. Drag the pin or tap the map."));
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
-  }, [move]);
+  }, [move, t]);
 
   const locate = () => {
     setLocating(true);
@@ -123,7 +131,7 @@ export function LocationField({
               addressTouched.current = true;
               setAddress(e.target.value);
             }}
-            placeholder="Landmark or address"
+            placeholder={t("Landmark or address")}
             className="pl-9"
             readOnly={locked}
           />
@@ -135,12 +143,12 @@ export function LocationField({
             className="inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-blue px-3.5 text-[13px] font-bold text-blue hover:bg-blue/5"
           >
             {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crosshair className="h-4 w-4" />}
-            <span className="hidden sm:inline">Use my location</span>
+            <span className="hidden sm:inline">{t("Use my location")}</span>
           </button>
         )}
       </div>
       {note && <p className="text-xs text-amber">{note}</p>}
-      {!locked && <p className="text-xs text-ash">Tap the map or drag the pin to the exact spot.</p>}
+      {!locked && <p className="text-xs text-ash">{t("Tap the map or drag the pin to the exact spot.")}</p>}
     </div>
   );
 }

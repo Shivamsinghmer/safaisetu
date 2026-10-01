@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, type ReactNode } from "react";
+import { useActionState, useRef, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -19,16 +19,20 @@ import {
   Sparkles,
   Trash2,
   Truck,
+  Users,
 } from "lucide-react";
-import { createTicketAction } from "@/app/actions/tickets";
+import Link from "@/components/nav-link";
+import { createTicketAction, findNearbyAction, supportTicketAction, type NearbyTicket } from "@/app/actions/tickets";
 import { analyzePhotoAction } from "@/app/actions/ai";
 import { PhotoCapture } from "@/components/photo-capture";
 import { LocationField } from "@/components/location-field";
 import { FormMessage, Input, Textarea } from "@/components/ui";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { ISSUE_CATEGORIES, ORG_TYPE_META, SEVERITY_META } from "@/lib/constants";
+import { ISSUE_CATEGORIES, ORG_TYPE_META, SEVERITY_META, STATUS_META } from "@/lib/constants";
 import type { AiAnalysis, OrgType, Severity } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
+import { useT } from "@/components/i18n-provider";
+import { categoryText, severityText } from "@/lib/i18n";
 
 export interface ReportOrg {
   id: string;
@@ -79,6 +83,7 @@ export function ReportForm({
   qr?: ReportQr | null;
   defaultOrgId?: string;
 }) {
+  const { t, locale } = useT();
   const [state, action] = useActionState(createTicketAction, null);
   const [photoPath, setPhotoPath] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -90,18 +95,35 @@ export function ReportForm({
   const [description, setDescription] = useState("");
   const [where, setWhere] = useState<string>(qr ? qr.org.id : (defaultOrgId ?? "public"));
   const [address, setAddress] = useState<string>(qr ? `${qr.label}, ${qr.org.address}` : "");
+  const [confirmWaste, setConfirmWaste] = useState(false);
+  const [nearby, setNearby] = useState<NearbyTicket[]>([]);
+  const [supported, setSupported] = useState<Record<string, number | string>>({});
+  const nearbyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Look for open reports around the pin (debounced), so people add their voice instead of duplicating
+  function onPosition(lat: number, lng: number) {
+    if (nearbyTimer.current) clearTimeout(nearbyTimer.current);
+    nearbyTimer.current = setTimeout(async () => {
+      setNearby(await findNearbyAction(lat, lng, "issue"));
+    }, 600);
+  }
+
+  async function support(id: string) {
+    const res = await supportTicketAction(id);
+    setSupported((s) => ({ ...s, [id]: res.ok ? res.count : res.error }));
+  }
 
   const org = qr ? null : (orgs.find((o) => o.id === where) ?? null);
   const placeName = qr ? qr.org.name : org?.name;
   const routedToMunicipality = where === "public" || ALWAYS_MUNICIPAL.includes(category);
-  const categoryMeta = ISSUE_CATEGORIES.find((c) => c.value === category);
 
   const steps = {
     photo: Boolean(photoPath),
     location: Boolean(address.trim()) || Boolean(qr) || Boolean(org),
     category: Boolean(category),
   };
-  const ready = steps.photo && steps.category;
+  const notWaste = Boolean(ai && !ai.is_waste);
+  const ready = steps.photo && steps.category && (!notWaste || confirmWaste);
 
   async function onPhoto(photo: { path: string; dataUrl: string; previewUrl: string }) {
     setPhotoPath(photo.path);
@@ -143,7 +165,7 @@ export function ReportForm({
       {/* ---------------- Steps ---------------- */}
       <div className="flex min-w-0 flex-col gap-5">
         {/* 1 · Photo */}
-        <StepCard n={1} title="Photo of the problem" hint="A clear photo lets AI fill in the rest." done={steps.photo}>
+        <StepCard n={1} title={t("Photo of the problem")} hint={t("A clear photo lets AI fill in the rest.")} done={steps.photo}>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
             <PhotoCapture
               userId={userId}
@@ -158,7 +180,7 @@ export function ReportForm({
                     <Sparkles className="h-3.5 w-3.5" /> AI triage · {Math.round(ai.confidence * 100)}%
                   </div>
                   <div className="mt-2 text-[15px] font-semibold text-foreground">
-                    {categoryMeta?.label ?? ai.category} · {SEVERITY_META[ai.severity].label.toLowerCase()} severity
+                    {categoryText(locale, ai.category)} · {severityText(locale, ai.severity)}
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{ai.description}</p>
                   <p className="mt-3 text-xs text-muted-foreground">Filled in below. Change anything that&apos;s off.</p>
@@ -166,25 +188,33 @@ export function ReportForm({
               ) : ai && !ai.is_waste ? (
                 <div className="flex gap-3 rounded-2xl border border-amber/40 bg-amber/10 p-4">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber" />
-                  <p className="text-sm text-foreground">
-                    This doesn&apos;t look like a waste problem. Retake it so the team can find and verify the spot.
-                    You can still submit if you&apos;re sure.
-                  </p>
+                  <div className="text-sm text-foreground">
+                    <p>{t("This doesn't look like a waste problem. Retake it so the team can find and verify the spot.")}</p>
+                    <label className="mt-3 flex cursor-pointer items-start gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={confirmWaste}
+                        onChange={(e) => setConfirmWaste(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-[var(--brand)]"
+                      />
+                      {t("I'm sure this is a waste problem")}
+                    </label>
+                  </div>
                 </div>
               ) : (
                 <div className="rounded-2xl bg-muted p-4">
                   <div className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
-                    Tips for a useful photo
+                    {t("Tips for a useful photo")}
                   </div>
                   <ul className="mt-3 space-y-2.5 text-sm text-foreground">
                     {[
                       "Show the whole pile or bin, not a close-up",
                       "Include a landmark: gate, shop sign, pole",
                       "Take it in daylight if you can",
-                    ].map((t) => (
-                      <li key={t} className="flex gap-2.5">
+                    ].map((tip) => (
+                      <li key={tip} className="flex gap-2.5">
                         <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald" strokeWidth={2.5} />
-                        {t}
+                        {t(tip)}
                       </li>
                     ))}
                   </ul>
@@ -199,7 +229,7 @@ export function ReportForm({
         </StepCard>
 
         {/* 2 · Location */}
-        <StepCard n={2} title="Where is it?" hint="Drag the pin to the exact spot." done={steps.location}>
+        <StepCard n={2} title={t("Where is it?")} hint={t("Drag the pin to the exact spot.")} done={steps.location}>
           {qr ? (
             <div className="mb-4 flex items-center gap-3 rounded-2xl bg-muted p-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card">
@@ -213,7 +243,7 @@ export function ReportForm({
           ) : (
             <div className="mb-4 inline-flex max-w-full flex-wrap gap-1 rounded-2xl bg-muted p-1" role="radiogroup" aria-label="Where">
               <Segment active={where === "public"} onClick={() => chooseWhere("public")} icon={<Globe2 className="h-4 w-4" />}>
-                Public area / road
+                {t("Public area / road")}
               </Segment>
               {orgs.map((o) => (
                 <Segment key={o.id} active={where === o.id} onClick={() => chooseWhere(o.id)} icon={<Building2 className="h-4 w-4" />}>
@@ -233,7 +263,54 @@ export function ReportForm({
             }
             locked={Boolean(qr)}
             onAddressChange={setAddress}
+            onPositionChange={onPosition}
           />
+          {nearby.length > 0 && (
+            <div className="mt-4 rounded-2xl border border-amber/40 bg-amber/[0.07] p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Users className="h-4 w-4 text-amber" /> {t("Already reported nearby")}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("If it's the same problem, add your voice instead. You'll get the same updates, and the team sees how many people are affected.")}
+              </p>
+              <ul className="mt-3 flex flex-col gap-2">
+                {nearby.map((n) => {
+                  const done = supported[n.id];
+                  return (
+                    <li key={n.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-card px-3 py-2.5">
+                      <div className="min-w-0 text-sm">
+                        <div className="font-semibold text-foreground">
+                          {categoryText(locale, n.category)} <span className="font-mono text-xs text-muted-foreground">{n.code}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {t("{m} m away", { m: n.distance_m })} · {t(STATUS_META[n.status].label)} · {timeAgo(n.created_at)}
+                          {n.supporters > 0 && ` · +${n.supporters} others`}
+                        </div>
+                      </div>
+                      {n.mine ? (
+                        <Link href={`/app/tickets/${n.id}`} className="text-sm font-semibold text-blue">
+                          {t("You're following this")}
+                        </Link>
+                      ) : typeof done === "number" ? (
+                        <Link href={`/app/tickets/${n.id}`} className="text-sm font-semibold text-emerald">
+                          {t("Added · open ticket")}
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => support(n.id)}
+                          className="inline-flex h-9 cursor-pointer items-center rounded-full bg-foreground px-4 text-[13px] font-semibold text-background"
+                        >
+                          {t("Me too")}
+                        </button>
+                      )}
+                      {typeof done === "string" && <p className="w-full text-xs text-coral">{done}</p>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
           {org && (
             <div className="mt-4 max-w-xs">
               <label htmlFor="unit_label" className="mb-1.5 block text-sm font-semibold text-foreground">
@@ -250,7 +327,7 @@ export function ReportForm({
         </StepCard>
 
         {/* 3 · What */}
-        <StepCard n={3} title="What's wrong?" hint="Pick the closest match." done={steps.category}>
+        <StepCard n={3} title={t("What's wrong?")} hint={t("Pick the closest match.")} done={steps.category}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Category">
             {ISSUE_CATEGORIES.map((c) => {
               const Icon = CATEGORY_ICONS[c.value] ?? HelpCircle;
@@ -278,14 +355,14 @@ export function ReportForm({
                   >
                     <Icon className="h-[18px] w-[18px]" />
                   </span>
-                  <span className="text-[13px] leading-tight font-semibold">{c.label}</span>
+                  <span className="text-[13px] leading-tight font-semibold">{categoryText(locale, c.value)}</span>
                 </button>
               );
             })}
           </div>
 
           <div className="mt-6">
-            <div className="mb-2 text-sm font-semibold text-foreground">How serious is it?</div>
+            <div className="mb-2 text-sm font-semibold text-foreground">{t("How serious is it?")}</div>
             <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Severity">
               {(["low", "medium", "high"] as Severity[]).map((s) => {
                 const on = severity === s;
@@ -303,9 +380,9 @@ export function ReportForm({
                   >
                     <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <span className={cn("h-2.5 w-2.5 rounded-full", SEVERITY_META[s].dot)} />
-                      {SEVERITY_META[s].label}
+                      {severityText(locale, s)}
                     </span>
-                    <span className="text-xs text-muted-foreground">{SEVERITY_HINTS[s]}</span>
+                    <span className="text-xs text-muted-foreground">{t(SEVERITY_HINTS[s])}</span>
                   </button>
                 );
               })}
@@ -314,7 +391,7 @@ export function ReportForm({
 
           <div className="mt-6">
             <label htmlFor="description" className="mb-1.5 block text-sm font-semibold text-foreground">
-              Details <span className="font-normal text-muted-foreground">(optional)</span>
+              {t("Details")} <span className="font-normal text-muted-foreground">{t("(optional)")}</span>
             </label>
             <Textarea
               id="description"
@@ -340,17 +417,17 @@ export function ReportForm({
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
                 <Camera className="h-6 w-6" />
-                <span className="text-xs">Your photo appears here</span>
+                <span className="text-xs">{t("Your photo appears here")}</span>
               </div>
             )}
             <span className="absolute top-3 left-3 rounded-full bg-card/95 px-2.5 py-1 font-mono text-[10px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
-              Ticket preview
+              {t("Ticket preview")}
             </span>
           </div>
 
           <div className="p-5">
             <div className="text-lg leading-tight font-semibold tracking-[-0.02em] text-foreground">
-              {categoryMeta?.label ?? <span className="text-muted-foreground">Choose a category</span>}
+              {category ? categoryText(locale, category) : <span className="text-muted-foreground">{t("Choose a category")}</span>}
             </div>
             <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
               <span className={cn("h-2 w-2 rounded-full", SEVERITY_META[severity].dot)} />
@@ -363,7 +440,7 @@ export function ReportForm({
 
             <div className="mt-4 rounded-2xl bg-muted p-3.5">
               <div className="font-mono text-[10px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
-                Goes to
+                {t("Goes to")}
               </div>
               <div className="mt-1.5 flex items-center gap-2.5">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card text-foreground">
@@ -371,7 +448,7 @@ export function ReportForm({
                 </span>
                 <div className="min-w-0 text-sm">
                   <div className="truncate font-semibold text-foreground">
-                    {routedToMunicipality ? "Municipality · your ward" : `${placeName} admin`}
+                    {routedToMunicipality ? t("Municipality · your ward") : `${placeName} admin`}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {routedToMunicipality
@@ -385,20 +462,20 @@ export function ReportForm({
             </div>
 
             <ul className="mt-4 space-y-2 text-sm">
-              <Req done={steps.photo}>Add a photo</Req>
-              <Req done={steps.location}>Set the location</Req>
-              <Req done={steps.category}>Pick a category</Req>
+              <Req done={steps.photo}>{t("Add a photo")}</Req>
+              <Req done={steps.location}>{t("Set the location")}</Req>
+              <Req done={steps.category}>{t("Pick a category")}</Req>
             </ul>
 
             <div className="mt-4">
               <FormMessage state={state} />
             </div>
             <div className="hidden lg:block">
-              <SubmitButton size="lg" pendingText="Submitting…" disabled={!ready} className="mt-4 w-full">
-                Submit report <ArrowUpRight className="h-4 w-4" />
+              <SubmitButton size="lg" pendingText={t("Submitting…")} disabled={!ready} className="mt-4 w-full">
+                {t("Submit report")} <ArrowUpRight className="h-4 w-4" />
               </SubmitButton>
               <p className="mt-3 text-center text-xs text-muted-foreground">
-                You&apos;ll get live updates on the ticket page.
+                {t("You'll get live updates on the ticket page.")}
               </p>
             </div>
           </div>
@@ -407,8 +484,16 @@ export function ReportForm({
 
       {/* Mobile: sticky submit bar above the tab bar */}
       <div className="sticky bottom-[var(--tabbar-h)] z-20 -mx-4 border-t border-border bg-background px-4 py-3 shadow-[0_-8px_16px_-12px_rgb(0_0_0/0.25)] sm:-mx-6 sm:px-6 lg:hidden">
-        <SubmitButton size="lg" pendingText="Submitting…" disabled={!ready} className="w-full">
-          {ready ? "Submit report" : !steps.photo ? "Add a photo to continue" : "Pick a category to continue"}
+        <SubmitButton size="lg" pendingText={t("Submitting…")} disabled={!ready} className="w-full">
+          {t(
+            ready
+              ? "Submit report"
+              : !steps.photo
+                ? "Add a photo to continue"
+                : notWaste && !confirmWaste
+                  ? "Confirm it's a waste problem"
+                  : "Pick a category to continue",
+          )}
         </SubmitButton>
       </div>
     </form>

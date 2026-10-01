@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, Building2, CalendarDays, CheckCircle2, Clock, MapPin, QrCode, Sparkles, Star } from "lucide-react";
+import { ArrowUpRight, Building2, CalendarCheck, CalendarDays, CheckCircle2, Clock, MapPin, Navigation, Phone, QrCode, Sparkles, Star, Users } from "lucide-react";
 import { Card, CardHeader, Pill, SeverityTag, StatusPill } from "@/components/ui";
 import { OverviewMap } from "@/components/maps";
 import { LiveRefresh } from "@/components/live-refresh";
@@ -12,6 +12,8 @@ import { STATUS_META, categoryLabel, ORG_TYPE_META } from "@/lib/constants";
 import type { Organization, Ticket, TicketEvent } from "@/lib/types";
 import { cn, formatDate, formatHours, hoursBetween, isOverdue, timeAgo } from "@/lib/utils";
 import { TicketActions } from "./ticket-actions";
+import { getT } from "@/lib/i18n-server";
+import { categoryText } from "@/lib/i18n";
 
 export const metadata: Metadata = { title: "Ticket" };
 
@@ -20,11 +22,12 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
   const { new: isNew } = (await searchParams) as { new?: string };
   const viewer = await requireViewer();
   const supabase = await createClient();
+  const { t, locale } = await getT();
 
   const { data: ticket } = await supabase.from("tickets").select("*").eq("id", id).maybeSingle<Ticket>();
   if (!ticket) notFound();
 
-  const [{ data: events }, { data: org }, { data: ward }] = await Promise.all([
+  const [{ data: events }, { data: org }, { data: ward }, { data: supporters }] = await Promise.all([
     supabase.from("ticket_events").select("*").eq("ticket_id", id).order("created_at"),
     ticket.org_id
       ? supabase.from("organizations").select("*").eq("id", ticket.org_id).maybeSingle<Organization>()
@@ -32,7 +35,9 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
     ticket.ward_id
       ? supabase.from("wards").select("name, code").eq("id", ticket.ward_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase.rpc("ticket_support_count", { p_ticket: id }),
   ]);
+  const supportCount = Number(supporters ?? 0);
 
   // Names of people on this ticket (the viewer can already see the ticket through RLS)
   const admin = createAdminClient();
@@ -111,18 +116,26 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
             >
               {ticket.scope === "municipal" ? "Municipality" : (org?.name ?? "Organization")}
             </Pill>
-            {ticket.source === "qr" && (
+            {ticket.source !== "app" && (
               <Pill className="bg-mist text-slate">
-                <QrCode className="h-3 w-3" /> QR report
+                <QrCode className="h-3 w-3" /> {ticket.source === "guest" ? "Guest QR report" : "QR report"}
+              </Pill>
+            )}
+            {supportCount > 0 && (
+              <Pill className="bg-amber/10 text-amber">
+                <Users className="h-3 w-3" /> +{supportCount} reported this too
               </Pill>
             )}
           </div>
           <h1 className="mt-2 font-display text-[24px] leading-tight font-bold tracking-[-0.035em] sm:text-[28px] md:text-heading-sm">
-            {categoryLabel(ticket.category)}
+            {categoryText(locale, ticket.category)}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate">
             <SeverityTag severity={ticket.severity} />
-            <span>Reported {timeAgo(ticket.created_at)} by {caps.reporter ? "you" : nameOf(ticket.reporter_id)}</span>
+            <span>
+              Reported {timeAgo(ticket.created_at)} by{" "}
+              {caps.reporter ? "you" : ticket.source === "guest" ? "a visitor (no account)" : nameOf(ticket.reporter_id)}
+            </span>
           </div>
         </div>
         <StatusPill status={ticket.status} className="self-start px-3 py-1 text-[13px]" />
@@ -167,6 +180,9 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
             ticketId={ticket.id}
             status={ticket.status}
             scope={ticket.scope}
+            kind={ticket.kind}
+            overdue={overdue}
+            scheduledFor={ticket.scheduled_for}
             assignedTo={ticket.assigned_to}
             caps={caps}
             workers={workers}
@@ -210,6 +226,14 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
               <Row icon={<MapPin className="h-4 w-4" />} label="Location">
                 {ticket.address || `${ticket.lat.toFixed(5)}, ${ticket.lng.toFixed(5)}`}
                 {ticket.unit_label && <div className="text-slate">{ticket.unit_label}</div>}
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${ticket.lat},${ticket.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-flex h-9 items-center gap-1.5 rounded-full border border-blue px-3.5 text-[13px] font-semibold text-blue hover:bg-blue/5"
+                >
+                  <Navigation className="h-3.5 w-3.5" /> {t("Get directions")}
+                </a>
               </Row>
               {org && (
                 <Row icon={<Building2 className="h-4 w-4" />} label={ORG_TYPE_META[org.type].label}>
@@ -224,6 +248,16 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
               {ticket.preferred_date && (
                 <Row icon={<CalendarDays className="h-4 w-4" />} label="Preferred pickup">
                   {formatDate(ticket.preferred_date)}
+                </Row>
+              )}
+              {ticket.scheduled_for && (
+                <Row icon={<CalendarCheck className="h-4 w-4" />} label={t("Collection date")}>
+                  <span className="font-semibold">{formatDate(ticket.scheduled_for)}</span>
+                </Row>
+              )}
+              {ticket.guest_contact && (caps.orgStaff || caps.muni) && (
+                <Row icon={<Phone className="h-4 w-4" />} label="Visitor's contact">
+                  {ticket.guest_contact}
                 </Row>
               )}
               {ticket.assigned_to && (

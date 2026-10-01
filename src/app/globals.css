@@ -617,3 +617,19 @@ body {
     letter-spacing: var(--tracking-normal);
   }
 }
+/* Themed dropdown (src/components/ui/select.tsx) */
+@keyframes dropdown-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+.dropdown-pop {
+  transform-origin: top;
+  animation: dropdown-pop 140ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-pop {
+    animation: none;
+  }
+}

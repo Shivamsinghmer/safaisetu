@@ -3,6 +3,43 @@
 Newest first. Add an entry under **Unreleased** with every change, and move it under a dated heading when it's pushed.
 
 ## Unreleased
+_Nothing yet._
+
+## 2026-10-01 — Security hardening, product gaps, Hindi, notifications and Kanpur demo
+- Language dropdown (English / हिन्दी) in the landing nav, and on the guest QR and tracking pages. The whole landing
+  page is translated, including the 3D city's labels. The choice is saved for the app too.
+- Themed dropdowns: a custom `Select` (button + listbox, keyboard accessible, light and dark) replaces the native
+  select. The worker picker shows each worker's open-task count under their name.
+- **Security:** signed-in users had full table privileges by Supabase default, which let anyone set their own
+  `platform_role` (e.g. become a municipal officer). All default privileges are revoked and only the needed grants
+  remain; a profile trigger also pins role, municipality and email. Applied to the hosted database.
+- **Proof enforced in the database:** no ticket can be resolved without an after photo (the old check trusted a hidden
+  form field). The UI keeps "Mark resolved" disabled until a photo is added.
+- Only a field worker of the ticket's own municipality can be assigned.
+- Complaints can't be buried: overdue internal tickets escalate to the city automatically every 15 minutes (pg_cron),
+  with in-app notifications, and residents can escalate themselves once the deadline passes.
+- Service area: reports and organizations more than 15 km from every ward are refused.
+- Guest QR reports: visitors who scan a bin report with a photo and no account, then follow a private tracking link.
+- "Me too": the report form shows open reports within ~80 m so people support them instead of filing duplicates;
+  supporters follow the ticket.
+- Pickups get a confirmed collection date set by the handler and emailed to the resident.
+- In-app notifications (bell + page, live), settings page with email opt-outs and language, and Hindi for citizen,
+  worker and guest screens.
+- Get directions link on tickets; a not-waste AI result must be confirmed before submitting.
+- Rate limits on reports, AI calls, guest reports, "me too", sign-ups and invites.
+- Municipal dashboard numbers are computed in the database (no 2,000-row cap); the complaint queue pages 50 at a time
+  with exact counts per tab.
+- Public ward scorecard at `/scorecard`.
+- Demo city moved from Bhopal to Kanpur (Kanpur Nagar Nigam, 6 wards); `npm run demo:reset`; `DEMO_LOGIN=off` switch.
+- **Fix:** a session whose account was deleted looped between `/login` and `/app`; it is now cleared via `/auth/reset`.
+- **Fix:** sign-up confirmation links fell back to `localhost`.
+- The photo picker and location field are translated too, so the Hindi report screen has no English left.
+- DESIGN.md documents the new UI patterns: notification bell, settings, proof-first resolve button, "me too" panel,
+  public guest pages, language rules and the footer legend.
+- Tests and CI: pgTAP tests for the database rules (`npm run test:db` runs them on the hosted project without Docker),
+  and a GitHub Actions workflow for typecheck, lint and the database tests.
+- Email notifications for every ticket and organization event (new report, status changes, assignment, escalation, batched pickups, reopen/close, registration review, join requests, notices). Sent after the response with Resend batch sends; see `docs/architecture.md`.
+- Footer redesign: bin legend cards with a tinted header, bigger bin icons and three example chips each (2 per row on phones); e-waste now says "Drop-off point" instead of "Black bin"; shorter wordmark cut off by the bottom bar; bottom bar credits Team Last Commit and links to GitHub.
 - Landing "Live intake" bucket: the box body's outline now shows in light mode too (a hairline `stroke-cloud`), matching the edges the white inner glow draws in dark mode.
 
 ## 2026-09-30 — Mobile, theming, PWA, auth redesign and QR fixes

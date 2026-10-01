@@ -22,6 +22,9 @@ export interface Profile {
   phone: string | null;
   platform_role: PlatformRole;
   municipality_id: string | null;
+  email_updates: boolean;
+  email_notices: boolean;
+  locale: "en" | "hi";
   created_at: string;
 }
 
@@ -111,7 +114,7 @@ export interface Ticket {
   severity: Severity;
   scope: TicketScope;
   status: TicketStatus;
-  source: "app" | "qr";
+  source: "app" | "qr" | "guest";
   lat: number;
   lng: number;
   address: string | null;
@@ -131,6 +134,9 @@ export interface Ticket {
   resolved_at: string | null;
   closed_at: string | null;
   rating: number | null;
+  scheduled_for: string | null;
+  guest_contact: string | null;
+  public_token: string;
   created_at: string;
   updated_at: string;
 }
