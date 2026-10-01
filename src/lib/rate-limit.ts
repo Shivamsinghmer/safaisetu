@@ -35,6 +35,7 @@ export async function clientIp() {
 export const LIMITS = {
   report: { max: 15, window: 3600 }, // new reports per user per hour
   ai: { max: 40, window: 3600 }, // photo analyses per user per hour
+  guestAi: { max: 15, window: 3600 }, // photo analyses per IP per hour on guest QR pages
   guestReport: { max: 5, window: 3600 }, // guest QR reports per IP per hour
   support: { max: 30, window: 3600 }, // "me too" per user per hour
   signup: { max: 10, window: 3600 }, // sign-ups per IP per hour

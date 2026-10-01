@@ -32,7 +32,7 @@ One account can be a citizen and an org admin at the same time. `/app` redirects
 | `tickets.ts` | `createTicketAction`, `updateTicketAction` (calls the `update_ticket` RPC), `forwardPickupsAction`, `findNearbyAction`, `supportTicketAction`, `createGuestReportAction` |
 | `account.ts` | `updateSettingsAction` (name, phone, email preferences, language), `markNotificationsReadAction` |
 | `orgs.ts` | Registering and reviewing orgs, joining by code or invite, inviting and approving members, notices, QR points |
-| `ai.ts` | `analyzePhotoAction`, `classifyItemAction` |
+| `ai.ts` | `analyzePhotoAction`, `analyzeGuestPhotoAction` (guest QR page), `classifyItemAction` |
 
    The body size limit is `2mb` (`next.config.ts`). Photos are compressed on the client first (`browser-image-compression`).
 4. **Realtime:** `<LiveRefresh channel filter>` subscribes to `tickets` changes and calls `router.refresh()`.
@@ -42,7 +42,8 @@ One account can be a citizen and an org admin at the same time. `/app` redirects
 → `memberships`, `invitations`, `qr_points`, `notices`.
 `profiles` (1:1 with `auth.users`; also `email_updates`, `email_notices`, `locale`). `tickets` (kind `issue` | `pickup`,
 scope `internal` | `municipal`, source `app` | `qr` | `guest`, `scheduled_for`, `guest_contact`, `public_token`)
-→ `ticket_events` (audit log), `ticket_supporters` ("me too"). `notifications` (in-app, per user).
+→ `ticket_events` (audit log), `ticket_supporters` ("me too"), `worker_locations` (live worker position, one row per
+ticket, only while it is in progress). `notifications` (in-app, per user).
 `private.rate_limits` (fixed-window counters, server only).
 
 ### Complaint routing (`private.ticket_before_insert`)
@@ -92,20 +93,23 @@ Uploads must go into the uploader's own folder (`<uid>/...`). Guest QR photos ar
 | `update_ticket(...)` | Status, note, assignee, after photo, escalation, rating and `p_scheduled_for` in one call |
 | `nearby_open_tickets(lat, lng, kind)` | Open reports within ~80 m the caller may support (public ones, or their own orgs') |
 | `support_ticket(id)` / `ticket_support_count(id)` | "Me too" and its count. Supporters can read the ticket and get the reporter's updates |
+| `share_worker_location(ticket, lat, lng, accuracy, heading, speed)` | Upserts the worker's live position. Only the assigned worker, only while the ticket is `in_progress` |
 | `take_rate_limit(key, max, window)` | Fixed-window rate limit; service role only |
 | `muni_ward_stats`, `muni_daily_counts`, `muni_breakdowns` | Dashboard aggregates (security invoker, so RLS scopes them to the officer's wards) |
 | `public_ward_scorecard()` | Per-ward aggregates for the public `/scorecard` page (granted to `anon`) |
 
 ### Rate limits (`src/lib/rate-limit.ts`)
 Counted in Postgres so they hold across serverless instances, and fail open if the check errors.
-Reports 15/user/hour · AI calls 40/user/hour · guest reports 5/IP/hour · "me too" 30/user/hour · sign-ups 10/IP/hour ·
+Reports 15/user/hour · AI calls 40/user/hour · guest AI calls 15/IP/hour · guest reports 5/IP/hour · "me too" 30/user/hour · sign-ups 10/IP/hour ·
 invite batches 10/user/hour.
 
 ## AI (`src/lib/groq.ts`)
 - The Groq vision model is `GROQ_VISION_MODEL`, falling back to `qwen/qwen3.8-27b`. Groq retired the Llama 4 vision models.
 - The photo is analyzed and returns category, severity, a short description and the waste stream. The result prefills the report form, and the user can edit everything.
 - Errors are classified as `AiError` kinds: `config | auth | rate_limit | model | bad_input | bad_output | network`.
-  Only `model` falls through to the next model. In dev, `failure()` in `actions/ai.ts` shows the real cause.
+  Only `model` falls through to the next model; that includes a missing model (404) and a retired one (Groq's 400
+  "has been decommissioned"), so a stale `GROQ_VISION_MODEL` can't break AI. In dev, `failure()` in `actions/ai.ts`
+  shows the real cause; in production the friendly message ends with the kind in brackets, e.g. "(auth)".
 - The Learn page uses `classifyItemAction` ("which bin does this go in?").
 
 ## Maps
@@ -113,7 +117,24 @@ invite batches 10/user/hour.
   client-only via `next/dynamic`.
 - `OverviewMap` shows ticket dots, org squares and an optional heatmap (`leaflet.heat`). `PickerMap` has a draggable
   green pin.
+- `LiveRouteMap` (`live-route-impl.tsx`) shows a worker's live position (pulsing blue dot, heading cone, accuracy
+  circle), the reported spot (red pin) and the road route between them. Routes come from the public OSRM server
+  (`router.project-osrm.org`, no key), refetched after ~60 m of movement or every 90 s; if it fails a dashed straight
+  line is drawn. While following, the map keeps both points in view; dragging stops following until "Recenter".
 - In dark mode the tiles are inverted with CSS. Controls and tooltips are themed in `globals.css`.
+
+## Live worker tracking (`src/app/app/tickets/[id]/live-tracking.tsx`)
+- When the assigned worker opens a ticket that is **in progress**, `WorkerNavigator` watches their GPS
+  (`watchPosition`, high accuracy), shows distance and time to the spot, keeps the screen awake (Wake Lock, where
+  supported), offers "Turn-by-turn in Google Maps", and sends the position through `share_worker_location` at most
+  every 8 s (sooner after 25 m). Within 40 m it switches to "You've arrived" and points to the after photo.
+- The reporter, the organization's staff and the ward's officer see `WorkerTracker` instead: the worker's position
+  moving live (Realtime `postgres_changes` on `worker_locations`), distance and time, and "Last seen N min ago" once
+  the position is over 2 minutes old.
+- Privacy: RLS on `worker_locations` (`private.can_track`) lets only the worker, the reporter, supporters, the org's
+  staff and the ward's municipality read it. The trigger `ticket_clear_worker_location` deletes the row as soon as the
+  ticket leaves `in_progress` or is reassigned, so no location history is kept. An assigned worker who hasn't started
+  sees a note explaining this.
 
 ## Notifications (`src/lib/notify.ts`)
 Every recipient gets an **in-app notification** (bell in the app shell, `/app/notifications`, live via Realtime), and an
@@ -154,7 +175,9 @@ invite links:
 Every org admin gets **QR codes** (`/app/org/[orgId]/qr`), including society, campus and public place admins. A code opens `/r/[qrId]`:
 - **Signed in:** redirects to `/app/report?qr=…` with the spot prefilled. The RLS insert policy allows QR reports from non-members.
 - **Signed out:** redirects to the guest page `/qr/[qrId]`: photo, category, optional phone or email, no account.
-  `createGuestReportAction` uploads the photo and inserts the ticket with the service role (rate-limited per IP), then
+  After the photo is taken, `analyzeGuestPhotoAction` (in `ai.ts`) runs the same AI tagging as the app and fills in
+  the category, severity and details. It only answers for an active QR code of an approved organization, and is
+  limited per IP. `createGuestReportAction` uploads the photo and inserts the ticket with the service role (rate-limited per IP), then
   sends the visitor to `/track/[public_token]`, a private status page for that report.
 
 ## Duplicates ("me too")
@@ -200,4 +223,4 @@ the mock app screens inside the landing visuals, are English only.
 | `src/lib` | Supabase clients, session, Groq, email (Resend), storage, constants, types |
 | `scripts/seed.ts` | Demo data for Kanpur Nagar Nigam: 6 wards, orgs, users and tickets (`npm run seed` or `npm run demo:reset`) |
 | `scripts/test-db.mjs` | Runs the database tests against the hosted project without Docker (`npm run test:db`) |
-| `supabase/tests/database` | pgTAP tests for routing, proof, assignment, escalation, privileges, guests, supporters, limits |
+| `supabase/tests/database` | pgTAP tests for routing, proof, assignment, live location, escalation, privileges, guests, supporters, limits |

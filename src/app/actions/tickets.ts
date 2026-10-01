@@ -209,6 +209,8 @@ const guestSchema = z.object({
   category: z.string().min(2, "Choose what's wrong").max(40),
   description: z.string().trim().max(500).default(""),
   contact: z.string().trim().max(80).optional(),
+  severity: z.enum(["low", "medium", "high"]).default("medium"),
+  ai: z.string().max(4000).optional(),
   photo: z.string().startsWith("data:image/jpeg;base64,", "Add a photo of the problem").max(2_000_000, "Photo is too large"),
 });
 
@@ -217,6 +219,14 @@ export async function createGuestReportAction(_: ActionState, formData: FormData
   const parsed = guestSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]!.message };
   const input = parsed.data;
+  let ai = null;
+  if (input.ai) {
+    try {
+      ai = aiSchema.parse(JSON.parse(input.ai));
+    } catch {
+      ai = null;
+    }
+  }
 
   const ip = await clientIp();
   if (!(await allow(`guest:${ip}`, LIMITS.guestReport.max, LIMITS.guestReport.window))) return { error: TOO_MANY };
@@ -242,7 +252,7 @@ export async function createGuestReportAction(_: ActionState, formData: FormData
       kind: "issue",
       category: input.category,
       description: input.description,
-      severity: "medium",
+      severity: input.severity,
       lat: qr.lat,
       lng: qr.lng,
       address: qr.label,
@@ -251,6 +261,7 @@ export async function createGuestReportAction(_: ActionState, formData: FormData
       photo_path: path,
       source: "guest",
       guest_contact: input.contact || null,
+      ai,
     })
     .select("id, public_token")
     .single();

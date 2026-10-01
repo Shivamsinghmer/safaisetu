@@ -17,3 +17,10 @@ export const PickerMap = dynamic(() => import("./maps-impl").then((m) => m.Picke
 });
 
 export type { MapTicket, MapOrg } from "./maps-impl";
+
+export const LiveRouteMap = dynamic(() => import("./live-route-impl"), {
+  ssr: false,
+  loading: () => <MapSkeleton height={340} />,
+});
+
+export type { LivePoint, RouteInfo } from "./live-route-impl";

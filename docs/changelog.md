@@ -3,6 +3,23 @@
 Newest first. Add an entry under **Unreleased** with every change, and move it under a dated heading when it's pushed.
 
 ## Unreleased
+_Nothing yet._
+
+## 2026-10-01 — Live worker tracking, AI on guest QR, AI model fallback
+- Fix "AI is unavailable" in production when `GROQ_VISION_MODEL` names a retired model: Groq's "decommissioned" error
+  now falls through to the working Qwen model instead of failing. Production AI errors now end with a short cause code
+  such as "(config)" or "(auth)" so failures can be diagnosed from a screenshot.
+- Guest QR page now uses AI too: the photo is tagged and the category, severity and details are filled in, like the
+  signed-in report form. New `analyzeGuestPhotoAction` works only for active QR codes and is limited to 15 per IP per
+  hour; guest reports now store the AI result and its severity instead of always "medium".
+- Live worker tracking, ride-hailing style. Once the worker starts a task, the ticket page shows a navigation map with
+  their live GPS position, the reported spot, the road route (OSRM) and the time and distance left, plus
+  "Turn-by-turn in Google Maps" and an arrival prompt to upload the after photo. The reporter, the society/campus
+  staff and the officer see the worker moving towards the spot in real time. New `worker_locations` table,
+  `share_worker_location` RPC, `private.can_track` RLS helper and a trigger that deletes the location when the task
+  stops being in progress (migration `20261001150000_worker_live_location.sql`); 5 new pgTAP tests.
+
+## 2026-10-01 — Hindi text clipping
 - Fix Hindi text being cut off: Noto Sans Devanagari is loaded for Hindi, `:lang(hi)` rules give headings and
   tight-leading text more line height and drop negative letter-spacing, the hero and feature-showcase reveal masks
   only clip their bottom edge in Hindi, the app shell carries `lang`, and the sidebar role label wraps instead of

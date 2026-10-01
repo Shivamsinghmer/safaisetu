@@ -1,10 +1,10 @@
--- Database rules: routing, proof, assignment, escalation, access, guests, supporters, limits.
+-- Database rules: routing, proof, assignment, live location, escalation, access, guests, supporters, limits.
 -- Run against the hosted project with `npm run test:db` (npx supabase test db --linked).
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 -- Fixtures live in Nagpur and Pune, far from any real ward, so they never mix with live data.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(30);
+select plan(35);
 
 -- ---------------------------------------------------------------------
 -- Fixtures (as postgres: triggers treat this like the service role)
@@ -93,12 +93,29 @@ select pg_temp.act_as('10000000-0000-0000-0000-000000000002');
 select lives_ok(
   $$select public.update_ticket('40000000-0000-0000-0000-000000000002', 'in_progress')$$,
   'the worker can start the task');
+
+-- Live location while working
+select lives_ok(
+  $$select public.share_worker_location('40000000-0000-0000-0000-000000000002', 21.15, 79.03, 10, 90, 2)$$,
+  'the worker shares their live location while working');
+select pg_temp.act_as('10000000-0000-0000-0000-000000000006');
+select throws_ok(
+  $$select public.share_worker_location('40000000-0000-0000-0000-000000000002', 21.15, 79.03)$$,
+  '42501', null, 'only the assigned worker can share a location');
+select is((select count(*) from public.worker_locations where ticket_id = '40000000-0000-0000-0000-000000000002')::int, 0,
+  'an outsider cannot see the worker''s location');
+select pg_temp.act_as('10000000-0000-0000-0000-000000000004');
+select is((select count(*) from public.worker_locations where ticket_id = '40000000-0000-0000-0000-000000000002')::int, 1,
+  'the reporter can watch the worker approach');
+select pg_temp.act_as('10000000-0000-0000-0000-000000000002');
 select throws_ok(
   $$select public.update_ticket('40000000-0000-0000-0000-000000000002', 'resolved')$$,
   '23514', null, 'the worker cannot resolve without a photo');
 select lives_ok(
   $$select public.update_ticket('40000000-0000-0000-0000-000000000002', 'resolved', null, null, '10000000-0000-0000-0000-000000000002/after.jpg')$$,
   'the worker resolves with an after photo');
+select is((select count(*) from public.worker_locations where ticket_id = '40000000-0000-0000-0000-000000000002')::int, 0,
+  'the live location is deleted once the task is resolved');
 
 -- ---------------------------------------------------------------------
 -- Escalation by the resident, only after the deadline

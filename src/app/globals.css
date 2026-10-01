@@ -390,6 +390,19 @@ body {
   filter: grayscale(0.85) invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.88);
 }
 
+/* Live location dot on the worker tracking map (components/maps/live-route-impl.tsx) */
+.live-pulse {
+  opacity: 0.35;
+  animation: live-pulse 1.8s ease-out infinite;
+}
+@keyframes live-pulse {
+  from { transform: scale(0.6); opacity: 0.45; }
+  to { transform: scale(2.2); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-pulse { animation: none; }
+}
+
 @utility label-mono {
   font-family: var(--font-mono);
   font-size: 11px;

@@ -37,8 +37,14 @@ function classify(e: unknown): AiError {
   const msg = e instanceof Error ? e.message : String(e);
   if (status === 401 || status === 403) return new AiError("auth", "Groq rejected the API key (GROQ_API_KEY is invalid or revoked)");
   if (status === 429) return new AiError("rate_limit", "Groq rate limit reached");
-  // Unusable model: missing, or doesn't accept image input → worth trying the next model
-  if (status === 404 || /model_not_found|does not exist|(does not|doesn't) support (image|vision)|vision.*not supported/i.test(msg))
+  // Unusable model: missing, retired (Groq answers 400 "has been decommissioned"), or doesn't accept image input
+  // → worth trying the next model
+  const code = (e as { error?: { error?: { code?: string } } })?.error?.error?.code ?? "";
+  if (
+    status === 404 ||
+    /model_not_found|model_decommissioned/.test(code) ||
+    /model_not_found|does not exist|decommissioned|no longer supported|(does not|doesn't) support (image|vision)|vision.*not supported/i.test(msg)
+  )
     return new AiError("model", msg);
   // The request itself was rejected (e.g. image too small / too large): retrying another model won't help
   if (status === 400 || status === 413 || status === 422) return new AiError("bad_input", msg);

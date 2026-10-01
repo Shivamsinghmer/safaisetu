@@ -12,6 +12,7 @@ import { STATUS_META, categoryLabel, ORG_TYPE_META } from "@/lib/constants";
 import type { Organization, Ticket, TicketEvent } from "@/lib/types";
 import { cn, formatDate, formatHours, hoursBetween, isOverdue, timeAgo } from "@/lib/utils";
 import { TicketActions } from "./ticket-actions";
+import { WorkerNavigator, WorkerTracker, type WorkerLocationRow } from "./live-tracking";
 import { getT } from "@/lib/i18n-server";
 import { categoryText } from "@/lib/i18n";
 
@@ -83,6 +84,18 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
   const overdue = isOverdue(ticket.sla_due_at, ticket.status);
   const tl = (events ?? []) as TicketEvent[];
 
+  // Live tracking while the worker is on the job: the worker navigates, the reporter and staff watch them approach
+  const working = ticket.status === "in_progress" && Boolean(ticket.assigned_to);
+  const canWatch = working && !caps.assignee && (caps.reporter || caps.orgStaff || caps.muni);
+  const { data: workerLoc } = canWatch
+    ? await supabase
+        .from("worker_locations")
+        .select("lat, lng, accuracy, heading, updated_at")
+        .eq("ticket_id", id)
+        .maybeSingle<WorkerLocationRow>()
+    : { data: null };
+  const place = ticket.address || `${ticket.lat.toFixed(5)}, ${ticket.lng.toFixed(5)}`;
+
   return (
     <>
       <LiveRefresh channel={`ticket-${id}`} filter={`id=eq.${id}`} />
@@ -143,6 +156,28 @@ export default async function TicketPage({ params, searchParams }: PageProps<"/a
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-6">
+          {working && caps.assignee && (
+            <WorkerNavigator ticketId={ticket.id} dest={{ lat: ticket.lat, lng: ticket.lng }} address={place} />
+          )}
+          {canWatch && (
+            <WorkerTracker
+              ticketId={ticket.id}
+              dest={{ lat: ticket.lat, lng: ticket.lng }}
+              workerName={nameOf(ticket.assigned_to)}
+              initial={workerLoc ?? null}
+            />
+          )}
+          {ticket.status === "assigned" && caps.assignee && (
+            <div className="flex items-start gap-3 rounded-xl border border-blue/25 bg-blue/[0.06] p-4 text-sm text-ink">
+              <Navigation className="mt-0.5 h-4 w-4 shrink-0 text-blue" />
+              <div>
+                <div className="font-semibold">{t("Start work to open live navigation")}</div>
+                <div className="text-slate">
+                  {t("You'll see the route to the spot, and the reporter and officer can see you on the way. Your location is shared only while the task is in progress.")}
+                </div>
+              </div>
+            </div>
+          )}
           {(before || after) && (
             <div className={cn("grid gap-3", after && "sm:grid-cols-2")}>
               {before && <Photo src={before} label="Reported" />}

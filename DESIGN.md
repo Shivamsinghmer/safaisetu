@@ -103,6 +103,13 @@ Every screen must work at **375px** (phone) in light and dark, with no sideways 
 - Pickups show a date input ("Collection date") with a secondary "Save collection date" button for the handler.
 - A resident whose internal ticket is overdue gets a primary "Send to the municipality" button.
 - Every ticket shows a blue outlined **Get directions** pill under its location.
+- **Live tracking card** (top of the main column while a ticket is in progress): a header row with a mono label
+  ("Navigate to the spot" / "Worker on the way · name"), the time in 22px display type plus the distance, and a
+  status chip on the right (green pulsing "Sharing live location", blue "Live", grey "Connecting…", coral
+  "Not sharing"). Below it a 340px map (300px for watchers) with the worker as a pulsing blue dot (grey when stale),
+  the spot as a red pin and the route as a blue line with a white casing (dashed when there's no road route). A white
+  "Recenter" pill appears bottom-right after the map is dragged. Amber strip for location errors with "Try again",
+  green strip on arrival, then a solid blue "Turn-by-turn in Google Maps" pill and a privacy note.
 
 ## Report form extras
 - **Already reported nearby:** an amber-tinted panel under the map lists open reports within ~80 m, each with a dark
@@ -114,7 +121,9 @@ Every screen must work at **375px** (phone) in light and dark, with no sideways 
 Pages a visitor reaches without an account (`/qr/[id]`, `/track/[token]`, `/scorecard`) use a plain single column
 (`max-w-lg`, or `max-w-[1000px]` for the scorecard table) on `bg-background`, with the logo at the top and no app shell.
 The guest QR page has an English/हिन्दी pill top-right. Photo capture is one large tappable 4:3 card; categories are
-a two-column grid of 44px buttons, so the whole report is a few thumb taps.
+a two-column grid of 44px buttons, so the whole report is a few thumb taps. While AI reads the photo, a dark pill
+sits on the photo ("AI is reading the photo…"); the result shows as the same "AI triage" card as the app's report form,
+and pre-selects the category and fills in the details (or shows the amber "doesn't look like waste" note).
 
 ## Dropdowns
 `Select` (`src/components/ui/select.tsx`) replaces the native select everywhere. The trigger is a button styled like
