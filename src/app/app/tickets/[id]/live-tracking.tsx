@@ -242,7 +242,21 @@ export function WorkerTracker({
           setNow(Date.now());
         },
       )
-      .subscribe();
+      // Changes made while the connection was down (a sleeping phone, a hidden tab) aren't replayed,
+      // so read the current row every time the channel (re)connects
+      .subscribe((status) => {
+        if (status !== "SUBSCRIBED") return;
+        void supabase
+          .from("worker_locations")
+          .select("lat, lng, accuracy, heading, updated_at")
+          .eq("ticket_id", ticketId)
+          .maybeSingle<WorkerLocationRow>()
+          .then(({ data, error }) => {
+            if (error) return;
+            setLoc(data);
+            setNow(Date.now());
+          });
+      });
     const tick = setInterval(() => setNow(Date.now()), 15_000);
     return () => {
       clearInterval(tick);

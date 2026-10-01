@@ -3,7 +3,8 @@
 Newest first. Add an entry under **Unreleased** with every change, and move it under a dated heading when it's pushed.
 
 ## Unreleased
-_Nothing yet._
+- Live tracking catches up after a dropped connection: the watcher re-reads the worker's position every time
+  the Realtime channel (re)connects, so a sleeping phone or hidden tab doesn't show a stale spot.
 
 ## 2026-10-01 — Live worker tracking, AI on guest QR, AI model fallback
 - Fix "AI is unavailable" in production when `GROQ_VISION_MODEL` names a retired model: Groq's "decommissioned" error
