@@ -20,6 +20,7 @@ import { FeatureShowcase } from "@/components/landing/feature-showcase";
 import { Hero } from "@/components/landing/hero";
 import { HeroFluid } from "@/components/landing/hero-fluid";
 import { LandingNav } from "@/components/landing/landing-nav";
+import { LandingHeader } from "@/components/landing/landing-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import Bucket from "@/components/bucket";
 import BentoCard from "@/components/bento-card";
@@ -41,35 +42,29 @@ export default async function Landing() {
     <I18nProvider locale={locale}>
       <div className="landing-snap bg-background" lang={locale}>
         {/* Nav */}
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur">
-          <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-4 sm:px-6">
-            <Logo />
-            <LandingNav />
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher />
-              <ThemeToggle />
-              {viewer ? (
-                <ButtonLink href="/app" size="sm">
-                  {t("Open app")}
+        <LandingHeader>
+          <Logo />
+          <LandingNav />
+          <div className="flex items-center gap-0.5">
+            <LanguageSwitcher compact />
+            <ThemeToggle />
+            <span className="mx-1.5 hidden h-5 w-px bg-bone sm:block" aria-hidden />
+            {viewer ? (
+              <ButtonLink href="/app" size="sm" className="h-9 gap-1.5 px-4 sm:pr-3">
+                {t("Open app")} <ArrowUpRight className="h-4 w-4 max-sm:hidden" />
+              </ButtonLink>
+            ) : (
+              <>
+                <ButtonLink href="/login" variant="ghost" size="sm" className="hidden h-9 sm:inline-flex">
+                  {t("Log in")}
                 </ButtonLink>
-              ) : (
-                <>
-                  <ButtonLink
-                    href="/login"
-                    variant="ghost"
-                    size="sm"
-                    className="hidden sm:inline-flex"
-                  >
-                    {t("Log in")}
-                  </ButtonLink>
-                  <ButtonLink href="/signup" size="sm">
-                    {t("Sign up")}
-                  </ButtonLink>
-                </>
-              )}
-            </div>
+                <ButtonLink href="/signup" size="sm" className="h-9 px-4">
+                  {t("Sign up")}
+                </ButtonLink>
+              </>
+            )}
           </div>
-        </header>
+        </LandingHeader>
 
         {/* 1 · Hero */}
         <section

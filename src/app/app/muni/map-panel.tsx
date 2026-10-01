@@ -11,7 +11,7 @@ export function MapPanel({ tickets, orgs }: { tickets: MapTicket[]; orgs: MapOrg
   const router = useRouter();
 
   return (
-    <div className="relative">
+    <div className="relative isolate">
       <div className="absolute top-3 right-3 z-[500] flex gap-2">
         <div className="flex rounded-full border border-bone bg-white/95 p-0.5 shadow-subtle backdrop-blur">
           {(["heat", "pins"] as const).map((m) => (

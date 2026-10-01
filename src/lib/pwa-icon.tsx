@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { MARK_BG, MARK_CHECK, MARK_LEAF, MARK_LEAF_FILL, MARK_VEIN } from "@/lib/brand-mark";
 
 /**
  * Raster version of src/app/icon.svg for home-screen / splash icons.
@@ -6,7 +7,7 @@ import { ImageResponse } from "next/og";
  * so Android launchers can crop it to any shape.
  */
 export function renderAppIcon(size: number, { maskable = false }: { maskable?: boolean } = {}) {
-  const mark = Math.round(size * (maskable ? 0.62 : 0.78));
+  const mark = Math.round(size * (maskable ? 0.62 : 0.8));
   return new ImageResponse(
     (
       <div
@@ -16,14 +17,15 @@ export function renderAppIcon(size: number, { maskable = false }: { maskable?: b
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#3f7a28",
-          borderRadius: maskable ? 0 : Math.round(size * 0.22),
+          background: MARK_BG,
+          borderRadius: maskable ? 0 : Math.round(size * 0.3),
         }}
       >
-        <svg width={mark} height={mark} viewBox="4 4 24 24">
-          <path d="M7 20c2.5-6 15.5-6 18 0" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
-          <path d="M10 20v3.5M16 17v6.5M22 20v3.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
-          <circle cx="16" cy="9.5" r="2.4" fill="#6ee7b7" />
+        {/* Same geometry as lib/brand-mark.ts (check rising into a leaf), cropped to the glyph */}
+        <svg width={mark} height={mark} viewBox="4 1 25 25">
+          <path d={MARK_CHECK} fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={MARK_LEAF} fill={MARK_LEAF_FILL} />
+          <path d={MARK_VEIN} stroke={MARK_BG} strokeWidth="0.9" strokeLinecap="round" />
         </svg>
       </div>
     ),

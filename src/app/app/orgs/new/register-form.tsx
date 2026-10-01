@@ -16,17 +16,23 @@ export function RegisterOrgForm({ userId }: { userId: string }) {
   const [type, setType] = useState<OrgType>("society");
   const [proof, setProof] = useState<{ path: string; name: string } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [proofError, setProofError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const meta = ORG_TYPE_META[type];
 
   async function upload(file: File) {
-    if (file.size > 10 * 1024 * 1024) return;
+    setProofError(null);
+    if (file.size > 10 * 1024 * 1024) {
+      setProofError("That file is over 10 MB. Upload a smaller PDF or a photo of the document.");
+      return;
+    }
     setUploading(true);
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
     const path = `${userId}/${crypto.randomUUID()}.${ext}`;
     const { error } = await createClient().storage.from("org-documents").upload(path, file, { contentType: file.type });
     setUploading(false);
-    if (!error) setProof({ path, name: file.name });
+    if (error) setProofError("Upload failed. Check your connection and try again.");
+    else setProof({ path, name: file.name });
   }
 
   return (
@@ -79,11 +85,11 @@ export function RegisterOrgForm({ userId }: { userId: string }) {
         )}
 
         <div>
-          <div className="mb-2 text-sm font-semibold text-carbon">Proof document (optional)</div>
+          <div className="mb-2 text-sm font-semibold text-carbon">Proof document</div>
           <input
             ref={fileRef}
             type="file"
-            accept="application/pdf,image/*"
+            accept="application/pdf,image/jpeg,image/png,image/webp"
             className="sr-only"
             onChange={(e) => {
               const f = e.target.files?.[0];
@@ -93,7 +99,11 @@ export function RegisterOrgForm({ userId }: { userId: string }) {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-dashed border-cloud bg-mist p-4 text-left hover:border-fog"
+            aria-describedby="proof-help"
+            className={cn(
+              "flex w-full cursor-pointer items-center gap-3 rounded-xl border border-dashed bg-mist p-4 text-left hover:border-fog",
+              proof ? "border-emerald/50" : proofError ? "border-coral/60" : "border-cloud",
+            )}
           >
             {uploading ? (
               <Loader2 className="h-5 w-5 animate-spin text-slate" />
@@ -105,7 +115,11 @@ export function RegisterOrgForm({ userId }: { userId: string }) {
             <span className="text-sm text-carbon">
               {proof ? proof.name : "Registration certificate or authorisation letter (PDF or image, max 10 MB)"}
             </span>
+            {proof && <span className="ml-auto shrink-0 text-xs font-semibold text-blue">Replace</span>}
           </button>
+          <p id="proof-help" className={cn("mt-1.5 text-xs", proofError ? "text-coral" : "text-ash")}>
+            {proofError ?? "Required. Only you and the municipality reviewing your registration can see it."}
+          </p>
         </div>
       </div>
 
@@ -116,8 +130,8 @@ export function RegisterOrgForm({ userId }: { userId: string }) {
           <p className="mt-2 text-xs text-ash">We use this to route your {meta.label.toLowerCase()} to the right ward.</p>
         </div>
         <FormMessage state={state} />
-        <SubmitButton size="lg" pendingText="Submitting…" className="self-start">
-          Submit for verification
+        <SubmitButton size="lg" pendingText="Submitting…" className="self-start" disabled={!proof || uploading}>
+          {uploading ? "Uploading document…" : proof ? "Submit for verification" : "Upload the proof document to continue"}
         </SubmitButton>
       </div>
     </form>

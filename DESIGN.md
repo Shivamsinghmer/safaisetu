@@ -90,9 +90,32 @@ Every screen must work at **375px** (phone) in light and dark, with no sideways 
 - **PWA:** `viewportFit: "cover"`, `appleWebApp`, generated icons and manifest shortcuts. See
   [docs/architecture.md](docs/architecture.md#pwa).
 
+## Brand mark
+- **Mark** (`LogoMark`, geometry in `src/lib/brand-mark.ts`): a deep-green (`#2f6b1f`) rounded square with a white
+  check whose long stroke grows into a lime (`#b8e65c`) leaf. "Done, and kept green." The same paths drive
+  `public/icon.svg`, `src/app/icon.svg` and the PNG/maskable PWA icons (`src/lib/pwa-icon.tsx`); change them together.
+- **Wordmark** (`Wordmark`): Inter bold, -0.035em, "Safai" in `onyx` and "Setu" in `brand`. Always `lang="en"`.
+- `Logo` = mark + wordmark; the mark tilts −6° on hover. Minimum mark size 16px (it reads as the check alone there).
+
+## Landing nav
+`LandingHeader` (`src/components/landing/landing-header.tsx`) is a 64px sticky band holding a floating 48px pill bar
+(max 1200px, inset 8px on phones). At the top of the page the bar is flat on the background; after 8px of scroll it
+lifts: `bg-card/90`, `border-bone`, a soft offset shadow and a light backdrop blur. Inside: logo · section links
+with a gliding `bg-muted` pill (`LandingNav`, hidden below `md`) · a compact borderless language switcher ("EN" / "हि",
+`Select variant="ghost"`) · theme toggle · a hairline divider · the CTA pill. On phones the chevron and the CTA arrow
+drop so everything fits at 375px.
+
 ## App shell, notifications and settings
-- The **notification bell** (`src/components/notification-bell.tsx`) sits in the desktop sidebar header next to the logo
-  and in the mobile header before the theme toggle. It shows a coral count badge (99+ max), updates live, and links to
+- **Sidebar fits without scrolling.** Notifications and Settings are not nav rows: the bell (and theme toggle) sit in
+  the sidebar header, and the account row at the bottom opens Settings (gear on the right, sign-out beside it). When a
+  person has a work role (officer, worker, society/campus staff) the citizen links are a `secondary` section that
+  starts folded; any section can be folded by its header (chevron, coral badge sum while folded), and a section holding
+  the current page always opens. Rows are 36px, 32px on short screens (`short:` = lg and ≤760px tall). Folding animates
+  through `grid-template-rows`. A thin themed scrollbar remains only as a last resort for very short windows.
+- Maps put their overlay controls inside a `relative isolate` wrapper, so `z-[500]` buttons never sit above the
+  mobile drawer or headers.
+- The **notification bell** (`src/components/notification-bell.tsx`) sits in the desktop sidebar header next to the
+  theme toggle and in the mobile header before the theme toggle. It shows a coral count badge (99+ max), updates live, and links to
   `/app/notifications`, where unread rows have a coral dot and bold titles.
 - **Settings** (`/app/settings`) is three cards: profile, email preferences (checkbox rows with a title and one-line
   explanation), and language (pill radios that fill with `primary` when chosen).

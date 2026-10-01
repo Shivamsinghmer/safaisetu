@@ -36,6 +36,7 @@ export function Select({
   variant = "field",
   icon,
   align = "start",
+  triggerLabel,
   className,
 }: {
   id?: string;
@@ -46,8 +47,11 @@ export function Select({
   onChange?: (value: string) => void;
   placeholder?: string;
   ariaLabel?: string;
-  /** "field" matches form inputs; "pill" is a compact rounded trigger for toolbars and navs */
-  variant?: "field" | "pill";
+  /** "field" matches form inputs; "pill" is a compact rounded trigger for toolbars and navs;
+   *  "ghost" is the same pill without a border, for controls sitting inside a bar */
+  variant?: "field" | "pill" | "ghost";
+  /** What the closed trigger shows (defaults to the chosen option's label), e.g. a short code */
+  triggerLabel?: (selected: SelectOption | undefined) => ReactNode;
   icon?: ReactNode;
   align?: "start" | "end";
   className?: string;
@@ -140,7 +144,10 @@ export function Select({
           "flex cursor-pointer items-center gap-2 text-left transition-[border-color,box-shadow,background-color] duration-150 focus:outline-none",
           variant === "field"
             ? "h-10 w-full rounded-md border border-input bg-white px-3 text-[15px] text-ink focus-visible:border-blue focus-visible:ring-3 focus-visible:ring-blue/15"
-            : "h-9 rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted focus-visible:ring-3 focus-visible:ring-blue/20",
+            : variant === "pill"
+              ? "h-9 rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted focus-visible:ring-3 focus-visible:ring-blue/20"
+              : "h-9 rounded-full px-2.5 text-[13px] font-semibold text-slate hover:bg-muted hover:text-ink focus-visible:ring-3 focus-visible:ring-blue/20",
+          open && variant === "ghost" && "bg-muted text-ink",
           open && variant === "field" && "border-blue ring-3 ring-blue/15",
         )}
       >
@@ -148,12 +155,13 @@ export function Select({
         <span
           className={cn("min-w-0 flex-1 truncate", !selected && "text-fog")}
         >
-          {selected?.label ?? placeholder}
+          {triggerLabel ? triggerLabel(selected) : (selected?.label ?? placeholder)}
         </span>
         <ChevronDown
           className={cn(
             "h-4 w-4 shrink-0 text-ash transition-transform duration-200",
             open && "rotate-180",
+            variant === "ghost" && "max-sm:hidden",
           )}
           aria-hidden
         />
@@ -171,7 +179,7 @@ export function Select({
             "absolute top-[calc(100%+6px)] z-50 max-h-72 min-w-full overflow-auto rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg focus:outline-none",
             "dropdown-pop",
             align === "end" ? "right-0" : "left-0",
-            variant === "pill" && "w-max min-w-40",
+            variant !== "field" && "w-max min-w-40",
           )}
         >
           {options.map((o, i) => {

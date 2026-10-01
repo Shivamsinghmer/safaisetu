@@ -3,6 +3,21 @@
 Newest first. Add an entry under **Unreleased** with every change, and move it under a dated heading when it's pushed.
 
 ## Unreleased
+_Nothing yet._
+
+## 2026-10-01 — New logo, landing nav, no-scroll sidebar, required org proof
+- Organization registration now requires a proof document (registration certificate or authorisation letter):
+  the submit button stays disabled until it is uploaded, the server rejects registrations without it, and oversized
+  or failed uploads show an error instead of failing silently.
+- New logo: a check that grows into a leaf (deep green + lime), with a two-tone "SafaiSetu" wordmark. Favicon, Apple
+  and PWA icons regenerated from one geometry (`src/lib/brand-mark.ts`); manifest theme color `#2f6b1f`.
+- Landing nav redesigned as a floating pill bar that lifts on scroll, with a compact "EN / हि" language switcher
+  (new `Select variant="ghost"` and `triggerLabel`).
+- App sidebar fits without scrolling: Notifications and Settings moved to the bell and the account row, citizen
+  links fold away for work roles, foldable sections, compact rows on short screens.
+- Fix map overlay buttons (dashboard map toggles, live-tracking "Recenter") showing above the mobile menu drawer.
+
+## 2026-10-01 — Live tracking reconnect
 - Live tracking catches up after a dropped connection: the watcher re-reads the worker's position every time
   the Realtime channel (re)connects, so a sleeping phone or hidden tab doesn't show a stale spot.
 

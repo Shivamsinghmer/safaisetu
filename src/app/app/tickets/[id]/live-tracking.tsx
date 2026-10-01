@@ -130,7 +130,7 @@ export function WorkerNavigator({ ticketId, dest, address }: { ticketId: string;
         <SharingBadge state={locationError ? "failed" : shared} />
       </div>
 
-      <div className="relative">
+      <div className="relative isolate">
         <LiveRouteMap me={me} dest={dest} follow={follow} onUserMove={() => setFollow(false)} onRoute={trip.setRoute} height={340} />
         {!follow && me && (
           <button
@@ -300,7 +300,7 @@ export function WorkerTracker({
           </span>
         )}
       </div>
-      <div className="relative">
+      <div className="relative isolate">
         <LiveRouteMap
           me={me}
           dest={dest}

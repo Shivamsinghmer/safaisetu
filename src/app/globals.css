@@ -670,3 +670,9 @@ body {
   padding-block: 0.22em !important;
   margin-block: -0.22em !important;
 }
+
+/* App sidebar: if a very short window ever needs to scroll it, the scrollbar is a quiet hairline */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}

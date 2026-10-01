@@ -63,7 +63,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
     });
   }
 
-  sections.push({
+  const citizenSection: NavSection = {
     title: role === "citizen" ? "You" : "As a citizen",
     items: [
       { href: "/app/home", label: "Home", icon: "home" },
@@ -72,10 +72,9 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
       { href: "/app/tickets", label: "My tickets", icon: "tickets" },
       { href: "/app/learn", label: "Waste guide", icon: "learn" },
       { href: "/app/orgs", label: "Join or register", icon: "join" },
-      { href: "/app/notifications", label: "Notifications", icon: "bell", badge: unread ?? 0 },
-      { href: "/app/settings", label: "Settings", icon: "settings" },
     ],
-  });
+  };
+  sections.push(citizenSection);
 
   const activeMemberships = viewer.memberships.filter((m) => m.status === "active");
   const staffOrgIds = activeMemberships.filter((m) => m.role !== "member").map((m) => m.org_id);
@@ -109,6 +108,9 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
       items,
     });
   }
+
+  // With a work role (officer, worker, org staff) the citizen links fold away, so the sidebar fits without scrolling
+  if (sections.length > 1) citizenSection.secondary = true;
 
   if (!mobileTabs.length) {
     mobileTabs =

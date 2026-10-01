@@ -9,13 +9,18 @@ import { Select } from "@/components/ui";
 import { LOCALES } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-/** Compact English / हिन्दी dropdown for navs. Saves the choice and re-renders the page in it. */
+const SHORT: Record<string, string> = { en: "EN", hi: "हि" };
+
+/** English / हिन्दी dropdown for navs. Saves the choice and re-renders the page in it.
+ *  `compact` is a borderless trigger showing a short code ("EN" / "हि"), for use inside a nav bar. */
 export function LanguageSwitcher({
   className,
   align = "end",
+  compact = false,
 }: {
   className?: string;
   align?: "start" | "end";
+  compact?: boolean;
 }) {
   const { locale, t } = useT();
   const router = useRouter();
@@ -23,18 +28,19 @@ export function LanguageSwitcher({
 
   return (
     <Select
-      variant="pill"
+      variant={compact ? "ghost" : "pill"}
       align={align}
+      triggerLabel={compact ? (o) => SHORT[o?.value ?? "en"] : undefined}
       ariaLabel={t("Language")}
       className={cn(pending && "opacity-60", className)}
       icon={
         <Languages
-          className="h-4 w-4 shrink-0 text-muted-foreground"
+          className={cn("h-4 w-4 shrink-0", compact ? "text-current" : "text-muted-foreground")}
           aria-hidden
         />
       }
       value={locale}
-      options={LOCALES.map((l) => ({ value: l.value, label: l.label }))}
+      options={LOCALES.map((l) => ({ value: l.value, label: l.label, hint: l.value === "hi" ? "Hindi" : undefined }))}
       onChange={(v) =>
         start(async () => {
           await setLocaleAction(v);

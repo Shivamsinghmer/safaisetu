@@ -83,7 +83,7 @@ The `private` schema holds security-definer functions used by RLS: `my_role`, `m
 | Bucket | Limit | Types | Notes |
 |---|---|---|---|
 | `complaint-photos` | 5 MB | jpeg/png/webp | Before and after photos. Private; served with signed URLs (`src/lib/storage.ts`) |
-| `org-documents` | 10 MB | images + pdf | Registration proof. Private; shown to the municipality with 15-minute signed URLs |
+| `org-documents` | 10 MB | images + pdf | Registration proof (required by `registerOrgAction`). Private; shown to the municipality with 15-minute signed URLs |
 
 Uploads must go into the uploader's own folder (`<uid>/...`). Guest QR photos are uploaded by the server into `guest/`.
 

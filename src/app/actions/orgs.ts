@@ -32,7 +32,7 @@ const registerSchema = z.object({
     .regex(/^@?[a-z0-9.-]+\.[a-z]{2,}$/, "Enter a domain like xyz.edu.in")
     .optional()
     .or(z.literal("")),
-  proof_path: z.string().max(300).optional(),
+  proof_path: z.string({ error: "Upload a proof document (registration certificate or authorisation letter)" }).min(1).max(300),
 });
 
 export async function registerOrgAction(_: ActionState, formData: FormData): Promise<ActionState> {
@@ -43,7 +43,7 @@ export async function registerOrgAction(_: ActionState, formData: FormData): Pro
   const parsed = registerSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]!.message };
   const input = parsed.data;
-  if (input.proof_path && !input.proof_path.startsWith(`${viewer.userId}/`)) return { error: "Invalid document" };
+  if (!input.proof_path.startsWith(`${viewer.userId}/`)) return { error: "Invalid document" };
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -57,7 +57,7 @@ export async function registerOrgAction(_: ActionState, formData: FormData): Pro
       reg_number: input.reg_number || null,
       unit_count: input.unit_count ?? null,
       email_domain: input.type === "college" ? input.email_domain || null : null,
-      proof_path: input.proof_path || null,
+      proof_path: input.proof_path,
     })
     .select("id")
     .single();
